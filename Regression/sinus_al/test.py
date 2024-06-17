@@ -12,8 +12,8 @@ size_init = 200
 # X = np.random.choice(np.linspace(0, 20, 10000), size = size_init, replace = False).reshape(-1, 1)
 # y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
 
-X = np.linspace(0, 20, 1000).reshape(-1, 1)
-y = np.sin(X)/2 - ((10 - X)**2)/50 + 2 + np.random.normal(scale=0.05, size=X.shape)
+# X = np.linspace(0, 20, 1000).reshape(-1, 1)
+# y = np.sin(X)/2 - ((10 - X)**2)/50 + 2 + np.random.normal(scale=0.05, size=X.shape)
 
 X = np.linspace(0, 5, 1000).reshape(-1, 1)
 y  = np.sin(5*X) + 0.5*np. sin(10*X) + 0.3 * np.cos(20*X)+ np.random.normal(scale=0.2, size=X.shape)
