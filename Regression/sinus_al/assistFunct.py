@@ -13,8 +13,8 @@ def predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, 
 	# Model selection and fit
 	model = regression_strategy(polyDeg, alpha, reg_stra)
 	model.fit(X_train, y_train.ravel())
-	if display:
-		print('Model (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained with ' + str(len(y_train)) + ' intances.')
+	# if display:
+		# print('Model (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained with ' + str(len(y_train)) + ' intances.')
 
 	# Prediction on the entire data set
 	y_pred = model.predict(X)
@@ -29,7 +29,7 @@ def predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, 
 
 	# Printing values
 	if display:
-		print("Mean absolute error: %.2f" % np.mean(np.absolute(y_pred - y)))
+		print("\nMean absolute error: %.2f" % np.mean(np.absolute(y_pred - y)))
 		print("Residual sum of squares (MSE): %.2f" % np.mean((y_pred - y) ** 2))
 		print("R2-score: %.2f" % r2_score(y, y_pred))
 
@@ -104,4 +104,3 @@ def plot_uncertainty(X_test, uncertainty, iteration, reg_stra, display = False, 
 		plt.savefig('images/plot_uncertainty/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
-

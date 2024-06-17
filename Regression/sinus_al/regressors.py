@@ -1,6 +1,6 @@
-from sklearn.preprocessing import PolynomialFeatures, SplineTransformer, StandardScaler
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.pipeline import make_pipeline
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor,RandomForestRegressor
 from sklearn.linear_model import Ridge
 
 def regression_strategy(polyDeg, alpha, reg_stra):
@@ -20,5 +20,8 @@ def regression_strategy(polyDeg, alpha, reg_stra):
 			'loss' : 'squared_error'
 			} 
 			model = GradientBoostingRegressor(**params)
+
+		case 'randomForest':
+			model = RandomForestRegressor(n_estimators = 1000, criterion = 'squared_error', n_jobs = -1)
 
 	return model

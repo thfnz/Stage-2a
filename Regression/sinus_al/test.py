@@ -9,22 +9,22 @@ from regressors import *
 # Data
 size_init = 200
 
-#X = np.random.choice(np.linspace(0, 20, 10000), size = size_init, replace = False).reshape(-1, 1)
-#y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
+# X = np.random.choice(np.linspace(0, 20, 10000), size = size_init, replace = False).reshape(-1, 1)
+# y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
 
 X = np.linspace(0, 20, 1000).reshape(-1, 1)
 y = np.sin(X)/2 - ((10 - X)**2)/50 + 2 + np.random.normal(scale=0.05, size=X.shape)
 
-# X = np.linspace(0, 5, 1000).reshape(-1, 1)
-# y  = np.sin(5*X) + 0.5*np. sin(10*X) + 0.3 * np.cos(20*X)+ np.random.normal(scale=0.2, size=X.shape)
+X = np.linspace(0, 5, 1000).reshape(-1, 1)
+y  = np.sin(5*X) + 0.5*np. sin(10*X) + 0.3 * np.cos(20*X)+ np.random.normal(scale=0.2, size=X.shape)
 
 # plt.figure('Initial data')
 # plt.scatter(X, y)
 # plt.title('sin(x) + noise')
 # plt.show()
 
-# Model selection (polynom - kernel_ridge - gaussian - spline - gradBoost)
-reg_stra_test = ['polynom']
+# Model selection (polynom - gradBoost - randomForest)
+reg_stra_test = ['polynom', 'gradBoost', 'randomForest']
 
 for reg_stra in reg_stra_test:
 	print('Testing : ' + reg_stra)
@@ -51,7 +51,7 @@ for reg_stra in reg_stra_test:
 	# AL
 	nb_iterations = 40
 	batch_size = int(4 / 2)
-	threshold = 0
+	threshold = 1e-3
 
 	# Optional : pyprind progBar
 	pbar = pyprind.ProgBar(nb_iterations, stream = sys.stdout)
@@ -88,7 +88,7 @@ for reg_stra in reg_stra_test:
 		y_test = np.delete(y_test, np.concatenate((query_min_uncertainty_idx, query_max_uncertainty_idx)))
 
 		# Training and prediction
-		y_pred, uncertainty_train, uncertainty_test = predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, display = False)
+		y_pred, uncertainty_train, uncertainty_test = predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, display = (iteration == nb_iterations - 1))
 
 		# Plot prediction
 		plot_values(X_test, y_test, X_train, y_train, X, y_pred, batch_size, iteration, reg_stra, display = False, save = True)
