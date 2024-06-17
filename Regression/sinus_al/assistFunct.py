@@ -21,7 +21,7 @@ def predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, 
 
 	# Uncertainty on test set
 	y_test_pred = model.predict(X_test).reshape(-1, 1)
-	uncertainty_test = np.absolute(np.subtract(y_test_pred, y_test))
+	uncertainty_test = np.absolute(y_test_pred.ravel() - y_test.ravel())
 
 	# Uncertainty on train set
 	y_train_pred = model.predict(X_train).reshape(-1, 1)
@@ -35,7 +35,7 @@ def predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, 
 
 	return y_pred, uncertainty_train, uncertainty_test
 
-def uncertainty_predictor(X_train, y_train, X_test, polyDeg, alpha, reg_stra, display = False):
+def uncertainty_predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, display = False):
 	# Returns uncertainty of the predicted targets values of X_test
 	start_time = time.time()
 
@@ -45,7 +45,7 @@ def uncertainty_predictor(X_train, y_train, X_test, polyDeg, alpha, reg_stra, di
 	if display:
 		print('Model (' + reg_stra + ') took ' + str(start_time - time.time()) + 's to be trained with ' + str(len(y_train)) + ' intances.')
 
-	uncertainty_predicted = np.absolute(model.predict(X_test)) # y_train = uncertainty_train, very clever technique !
+	uncertainty_predicted = np.absolute(model.predict(X_test).ravel() - y_test.ravel()) # y_train = uncertainty_train, very clever technique !
 
 	return uncertainty_predicted
 
@@ -53,16 +53,18 @@ def check_images_dir(dir):
 	os.makedirs('./images', exist_ok = True)
 	os.makedirs('./images/' + dir, exist_ok = True)
 
-def plot_values(X_test, y_test, X_train, y_train, X, y_pred, iteration, reg_stra, display = False, save = False):
+def plot_values(X_test, y_test, X_train, y_train, X, y_pred, batch_size, iteration, reg_stra, display = False, save = False):
 	check_images_dir('plot_values/' + reg_stra)
 
 	plt.figure(str(iteration + 1))
 	plt.title('Model : ' + reg_stra + ' - Iteration ' + str(iteration + 1))
 	plt.scatter(X, y_pred, color = 'Red', label = 'Predicted data', s = 8)
 	plt.scatter(X_test, y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 5)
-	plt.scatter(X_train, y_train, color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
+	plt.scatter(X_train[-2 * batch_size:], y_train[-2 * batch_size:], color = 'Green', label = 'Last train data added', s = 8, marker = 's')
+	plt.scatter(X_train[: - 2 * batch_size], y_train[: - 2 * batch_size], color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
 	plt.xlabel('X')
-	plt.legend(loc = 'upper left')
+	if iteration == -1:
+		plt.legend(loc = 'upper left', prop = {'size' : 10})
 
 	if display:
 		plt.show()
@@ -87,14 +89,14 @@ def plot_y_corr(y_pred, y, iteration, reg_stra, display = False, save = False):
 
 	plt.close()
 
-def plot_uncertainty(X_test, uncertainty_test, iteration, reg_stra, display = False, save = False):
+def plot_uncertainty(X_test, uncertainty, iteration, reg_stra, display = False, save = False):
 	check_images_dir('plot_uncertainty/' + reg_stra)
 
 	plt.figure(str(iteration + 1))
 	plt.title('Model : ' + reg_stra + ' - Iteration ' + str(iteration + 1))
 	plt.xlabel('X_test')
-	plt.ylabel('uncertainty_test')
-	plt.scatter(X_test, uncertainty_test)
+	plt.ylabel('Uncertainty')
+	plt.scatter(X_test, uncertainty)
 
 	if display:
 		plt.show()

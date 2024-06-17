@@ -9,11 +9,11 @@ from regressors import *
 # Data
 size_init = 200
 
-X = np.random.choice(np.linspace(0, 20, 10000), size = size_init, replace = False).reshape(-1, 1)
-y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
+#X = np.random.choice(np.linspace(0, 20, 10000), size = size_init, replace = False).reshape(-1, 1)
+#y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
 
-# X = np.linspace(0, 20, 1000).reshape(-1, 1)
-# y = np.sin(X)/2 - ((10 - X)**2)/50 + 2 + np.random.normal(scale=0.05, size=X.shape)
+X = np.linspace(0, 20, 1000).reshape(-1, 1)
+y = np.sin(X)/2 - ((10 - X)**2)/50 + 2 + np.random.normal(scale=0.05, size=X.shape)
 
 # X = np.linspace(0, 5, 1000).reshape(-1, 1)
 # y  = np.sin(5*X) + 0.5*np. sin(10*X) + 0.3 * np.cos(20*X)+ np.random.normal(scale=0.2, size=X.shape)
@@ -24,7 +24,7 @@ y = np.sin(X) + np.random.normal(scale = 0.3, size = X.shape)
 # plt.show()
 
 # Model selection (polynom - kernel_ridge - gaussian - spline - gradBoost)
-reg_stra_test = ['polynom', 'gradBoost', 'gaussian']
+reg_stra_test = ['polynom']
 
 for reg_stra in reg_stra_test:
 	print('Testing : ' + reg_stra)
@@ -45,20 +45,23 @@ for reg_stra in reg_stra_test:
 
 	# Initial prediction
 	y_pred, uncertainty_train, uncertainty_test = predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, display = False)
-	plot_values(X_test, y_test, X_train, y_train, X, y_pred, -1, reg_stra, display = False, save = True)
+	plot_values(X_test, y_test, X_train, y_train, X, y_pred, len(X_test), -1, reg_stra, display = False, save = True)
 	plot_y_corr(y_pred, y, -1, reg_stra, display = False, save = True)
 
 	# AL
 	nb_iterations = 40
 	batch_size = int(4 / 2)
-	threshold = 1.5e-3
+	threshold = 0
 
 	# Optional : pyprind progBar
 	pbar = pyprind.ProgBar(nb_iterations, stream = sys.stdout)
 
 	for iteration in range(nb_iterations):
 		# Query strategy
-		uncertainty_pred = uncertainty_predictor(X_train, uncertainty_train, X_test, polyDeg, alpha, reg_stra, display = False)
+		uncertainty_pred = uncertainty_predictor(X_train, uncertainty_train, X_test, uncertainty_test,polyDeg, alpha, reg_stra, display = False)
+
+		# Plot uncertainty
+		plot_uncertainty(X_test, uncertainty_pred, iteration, reg_stra, display = False, save = True)
 
 		# Extract worst and best uncertainties
 		# Value
@@ -88,13 +91,8 @@ for reg_stra in reg_stra_test:
 		y_pred, uncertainty_train, uncertainty_test = predictor(X_train, y_train, X_test, y_test, polyDeg, alpha, reg_stra, X, y, display = False)
 
 		# Plot prediction
-		plot_values(X_test, y_test, X_train, y_train, X, y_pred, iteration, reg_stra, display = False, save = True)
+		plot_values(X_test, y_test, X_train, y_train, X, y_pred, batch_size, iteration, reg_stra, display = False, save = True)
 		plot_y_corr(y_pred, y, iteration, reg_stra, display = False, save = True)
 
 		# Optional : pyprind progBar
 		pbar.update()
-
-
-
-
-
