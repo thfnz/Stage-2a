@@ -32,3 +32,13 @@ def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, reg_stra, batch
 	y_test = np.delete(y_test, np.concatenate((query_min_uncertainty_idx, query_max_uncertainty_idx)))
 
 	return X_train, y_train, X_test, y_test, r2_score
+
+def committee(X_train, X_test, y_test, X, y, batch_size, committee):
+	# Query
+	query_idx, query_instance = committee.query(X_test)
+
+	# Labeling
+	committee.teach(X = X_test[query_idx], y = y_test[query_idx])
+
+	# New datasets
+	X_train = np.delete(X_train, que)

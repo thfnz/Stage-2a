@@ -9,7 +9,7 @@ from assistFunct import *
 from query_strategies import *
 
 # Loading dataset
-dataset = pd.read_csv('properties.csv')
+dataset = pd.read_csv('../properties.csv')
 
 feature_columns = ['dimensions', ' supercell volume [A^3]', ' density [kg/m^3]', ' surface area [m^2/g]', 
 ' num carbon', ' num hydrogen', ' num nitrogen', ' num oxygen', ' num sulfur', ' num silicon', 
@@ -20,7 +20,7 @@ X = dataset[feature_columns].values # 69840 instances
 y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Train/Test split
-X, X_test, y, y_test = train_test_split(X, y, test_size = 0.3)
+X_test, X_eval, y_test, y_eval = train_test_split(X, y, test_size = 0.1)
 
 # Model selection
 reg_stra_test = ['randomForest']
@@ -30,8 +30,7 @@ for reg_stra in reg_stra_test:
 
 	# Random training set
 	n_init = 2
-	idx_init = np.random.choice(range(X.shape[0]), size = n_init, replace = False)
-	X_train, y_train = X[idx_init], y[idx_init]
+	X_train, y_train, X_test, y_test = random_training_set(X_test, y_test, n_init)
 
 	# AL
 	nb_iterations = 40
@@ -50,9 +49,8 @@ for reg_stra in reg_stra_test:
 		# Optional : pyprind progBar
 		pbar.update()
 
-	# Results
-	y_pred, uncertainty_train, uncertainty_test, r2_score = predictor(X_train, y_train, X_test, y_test, reg_stra, X, y, display = True)
-	r2_scores.append(r2_score)
+	# Results (final evaluation)
+	predictor(X_train, y_train, X_eval, y_eval, reg_stra, X, y, display = True)
 	plt.figure()
 	plt.plot(range(len(r2_scores)), r2_scores)
 	plt.show()
