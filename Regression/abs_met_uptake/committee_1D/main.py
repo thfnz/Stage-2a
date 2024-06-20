@@ -25,6 +25,14 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 y_argsorted = np.argsort(y) # Used for evaluation
 y = np.array([[y[i], int(i)]for i in range(len(y))]) # Add absolute indices to y
 
+# Bad sorting of y in order to keep the absolute indices (used for evaluation)
+y_sorted = np.zeros((len(y_argsorted), 2))
+
+i = 0
+for idx in y_argsorted:
+	y_sorted[i] = y[idx]
+	i += 1
+
 # Model selection
 reg_stra = 'randomForest'
 
@@ -35,7 +43,7 @@ batch_size = 10
 
 # Random training sets
 member_sets = [] # Training datasets for each member of the committee
-n_init = 100
+n_init = 5
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (len(feature_columns) * n_init) / 69840))
 
 for idx_feature in range(len(feature_columns)):
@@ -101,26 +109,39 @@ for iteration in range(nb_iterations):
 		for candidate in idx_maxVoteCount:
 			final_query.append(candidate)
 
-	# Evaluation of the model
-	query_absolute = y_test[final_query[0]][1]
+	# Evaluation of the model (Mean value of y[final_query] compared to max target value)
+	qualities.append(np.mean(y_test[final_query, 0]) / y_sorted[-1][0])
+
+	"""
+	# Find the indice of the best query's value in y_sorted (Bad practice ! There must be a better (and smarter) way)
+	max_y = 0
+	for query in final_query:
+		if y_test[query][0] > max_y:
+			best_query_absolute = y_test[query][1]
+			max_y = y_test[query][0]
+	
 	found = False
-	idx = 0
+	query_sorted = 0
 	while not found:
-		if query_absolute == y_argsorted[idx]:
+		if best_query_absolute == y_sorted[query_sorted, 1]:
 			found = True
 		else:
-			idx += 1
-	qualities.append(idx / len(y))
+			query_sorted += 1
+
+	# Plot best query
+	plot_best_query(y_sorted[:, 0], query_sorted, reg_stra, iteration, display = False, save = True)
+	"""
 
 	# New datasets
 	for idx_feature in range(len(feature_columns)):
 		member_sets[idx_feature][0], member_sets[idx_feature][1] = new_datasets(member_sets[idx_feature][0], member_sets[idx_feature][1], X_test[:, idx_feature], y_test[:, 0], final_query)
-	delete_data(X_test, y_test, final_query)
+	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
 
 	# Optional : pyprind progBar
 	pbar.update()
 
-# Plot evaluation
+# Plot evaluation (TODO : add gif)
 plt.figure()
 plt.plot(range(len(qualities)), qualities)
 plt.show()
+

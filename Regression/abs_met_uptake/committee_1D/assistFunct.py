@@ -59,3 +59,20 @@ def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch
 		plt.savefig('images/plot_values/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
+
+def plot_best_query(y_sorted, best_query, reg_stra, iteration, display = False, save = True):
+	check_images_dir('plot_best_query/' + reg_stra)
+	
+	plt.figure()
+	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
+	plt.scatter(best_query, y_sorted[best_query], color = 'Red')
+
+	if display:
+		plt.show()
+	if save:
+		plt.savefig('images/plot_best_query/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+
+	plt.close()
+
+
+
