@@ -81,10 +81,8 @@ def check_images_dir(dir):
 def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch_size, iteration, lines = 4, columns = 4, display = False, save = False):
 	check_images_dir('plot_values/' + reg_stra)
 
-	plt.figure(size = [15, 10])
 	fig, axs = plt.subplots(lines, columns)
-	l = 0
-	c = 0
+	l, c = 0, 0
 	for idx_feature in range(len(feature_columns)):
 		X_train, y_train, y_pred = member_sets[idx_feature][0], member_sets[idx_feature][1], member_sets[idx_feature][2]
 		axs[l, c].scatter(X[:, idx_feature], y_pred, color = 'Red', label = 'Predicted data', s = 8)
@@ -102,6 +100,27 @@ def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch
 		plt.show()
 	if save:
 		plt.savefig('images/plot_values/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+
+	plt.close()
+
+def plot_r2(member_sets, feature_columns, reg_stra, lines = 4, columns = 4, display = False, save = True):
+	check_images_dir('plot_r2/' + reg_stra)
+
+	fix, axs = plt.subplots(lines, columns)
+	l, c = 0, 0
+	for idx_feature in range(len(feature_columns)):
+		axs[l, c].plot(range(len(member_sets[idx_feature][3])), member_sets[idx_feature][3])
+		axs[l, c].set_title(feature_columns[idx_feature])
+		if l == lines - 1:
+			l = 0
+			c += 1
+		else:
+			l += 1
+
+	if display:
+		plt.show()
+	if save:
+		plt.savefig('images/plot_r2/' + reg_stra + '.png', dpi=300)
 
 	plt.close()
 

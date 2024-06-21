@@ -30,13 +30,13 @@ def query_target_max_value(X_train, y_train, X_test, reg_stra, batch_size, displ
 
 def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, reg_stra, batch_size, display = False):
 	# Predictions
-	y_pred, uncertainty_train = predictor(X_train, y_train, X_test, X, y, reg_stra, display = display)
+	y_pred, uncertainty_train, r2_score = predictor(X_train, y_train, X_test, X, y, reg_stra, display = display)
 	uncertainty_pred = uncertainty_predictor(X_train, uncertainty_train, X_test, reg_stra, display = display)
 
 	# Extract worst uncertainties
 	query_max_uncertainty_idx = np.argsort(uncertainty_pred)[-batch_size:] # Low confidence
 
-	return y_pred, query_max_uncertainty_idx 
+	return y_pred, query_max_uncertainty_idx, r2_score
 
 def predictor(X_train, y_train, X_test, X, y, reg_stra, display = False):
 	# Fit the chosen model and returns predicted targets (of every instances of the dataset) + the uncertainty train data
@@ -61,7 +61,7 @@ def predictor(X_train, y_train, X_test, X, y, reg_stra, display = False):
 		print("Residual sum of squares (MSE): %.2f" % np.mean((y_pred - y) ** 2))
 		print("R2-score: %.2f" % r2_score(y, y_pred))
 
-	return y_pred, uncertainty_train
+	return y_pred, uncertainty_train, r2_score(y, y_pred)
 
 def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 	# Returns uncertainty of the predicted targets values of X_test

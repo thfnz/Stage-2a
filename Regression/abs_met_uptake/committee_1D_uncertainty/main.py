@@ -48,7 +48,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (len(
 
 for idx_feature in range(len(feature_columns)):
 	X_train_feature, y_train_feature, idx_init = random_training_set(X_train[:, idx_feature], y_train[:, 0], n_init)
-	member_sets.append([X_train_feature, y_train_feature, 0]) # 0 = Placeholder for y_pred
+	member_sets.append([X_train_feature, y_train_feature, 0, []]) # 0, [] = Placeholder for y_pred and r2_score
 	X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 # Optional : pyprind progBar
@@ -65,9 +65,10 @@ for iteration in range(nb_iterations):
 		X_train, y_train = member_sets[idx_feature][0], member_sets[idx_feature][1]
 
 		# Vote
-		y_pred, query = uncertainty_sampling(X_train.reshape(-1, 1), y_train, X_test[:, idx_feature].reshape(-1, 1), y_test[:, 0], X[:, idx_feature].reshape(-1, 1), y[:, 0], reg_stra, batch_size, display = False)
+		y_pred, query, r2_score = uncertainty_sampling(X_train.reshape(-1, 1), y_train, X_test[:, idx_feature].reshape(-1, 1), y_test[:, 0], X[:, idx_feature].reshape(-1, 1), y[:, 0], reg_stra, batch_size, display = False)
 		votes.append(query)
 		member_sets[idx_feature][2] = y_pred
+		member_sets[idx_feature][3].append(r2_score)
 
 	# Vote count
 	final_query = vote_count(votes, batch_size)
@@ -102,6 +103,12 @@ for iteration in range(nb_iterations):
 	# Optional : pyprind progBar
 	pbar.update()
 
+# Quality 
+"""
 plt.figure()
 plt.plot(range(len(qualities)), qualities)
 plt.show()
+"""
+
+# r2
+plot_r2(member_sets, feature_columns, reg_stra, display = True, save = False)
