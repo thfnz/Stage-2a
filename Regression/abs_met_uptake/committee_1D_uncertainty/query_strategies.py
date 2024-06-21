@@ -36,7 +36,7 @@ def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, reg_stra, batch
 	# Extract worst uncertainties
 	query_max_uncertainty_idx = np.argsort(uncertainty_pred)[-batch_size:] # Low confidence
 
-	return y_pred, query_max_uncertainty_idx, r2_score
+	return y_pred, query_max_uncertainty_idx, r2_score, uncertainty_pred
 
 def predictor(X_train, y_train, X_test, X, y, reg_stra, display = False):
 	# Fit the chosen model and returns predicted targets (of every instances of the dataset) + the uncertainty train data

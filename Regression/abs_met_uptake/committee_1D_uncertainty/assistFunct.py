@@ -103,13 +103,13 @@ def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch
 
 	plt.close()
 
-def plot_r2(member_sets, feature_columns, reg_stra, lines = 4, columns = 4, display = False, save = True):
+def plot_r2(r2_scores, idx, feature_columns, reg_stra, lines = 4, columns = 4, display = False, save = True):
 	check_images_dir('plot_r2/' + reg_stra)
 
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_feature in range(len(feature_columns)):
-		axs[l, c].plot(range(len(member_sets[idx_feature][3])), member_sets[idx_feature][3])
+		axs[l, c].plot(range(len(r2_scores[idx_feature][idx])), r2_scores[idx_feature][idx])
 		axs[l, c].set_title(feature_columns[idx_feature])
 		if l == lines - 1:
 			l = 0

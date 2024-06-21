@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pyprind
 import sys
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
 
 from assistFunct import *
 from query_strategies import *
@@ -33,8 +34,8 @@ for idx in y_argsorted:
 	y_sorted[i] = y[idx]
 	i += 1
 
-# Model selection
-reg_stra = 'randomForest'
+# Model selection (randomForest - elasticNet)
+reg_stra = 'elasticNet'
 
 # AL
 nb_iterations = 40
@@ -48,7 +49,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (len(
 
 for idx_feature in range(len(feature_columns)):
 	X_train_feature, y_train_feature, idx_init = random_training_set(X_train[:, idx_feature], y_train[:, 0], n_init)
-	member_sets.append([X_train_feature, y_train_feature, 0, []]) # 0, [] = Placeholder for y_pred and r2_score
+	member_sets.append([X_train_feature, y_train_feature, 0, [], []]) # 0, [] = Placeholder for y_pred and r2_scores
 	X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 # Optional : pyprind progBar
@@ -56,6 +57,7 @@ pbar = pyprind.ProgBar(nb_iterations, stream = sys.stdout)
 
 # AL
 qualities = []
+member_uncertainty_pred_n_m_one = [0 for elt in feature_columns]
 
 for iteration in range(nb_iterations):
 	votes = []
@@ -65,10 +67,15 @@ for iteration in range(nb_iterations):
 		X_train, y_train = member_sets[idx_feature][0], member_sets[idx_feature][1]
 
 		# Vote
-		y_pred, query, r2_score = uncertainty_sampling(X_train.reshape(-1, 1), y_train, X_test[:, idx_feature].reshape(-1, 1), y_test[:, 0], X[:, idx_feature].reshape(-1, 1), y[:, 0], reg_stra, batch_size, display = False)
+		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train.reshape(-1, 1), y_train, X_test[:, idx_feature].reshape(-1, 1), y_test[:, 0], X[:, idx_feature].reshape(-1, 1), y[:, 0], reg_stra, batch_size, display = False)
 		votes.append(query)
 		member_sets[idx_feature][2] = y_pred
-		member_sets[idx_feature][3].append(r2_score)
+		member_sets[idx_feature][3].append(r2_score_y)
+
+		# r2_score on train only
+		if iteration > 0:
+			member_sets[idx_feature][4].append(r2_score(uncertainty_pred.reshape(-1, 1), np.delete(member_uncertainty_pred_n_m_one[idx_feature], final_query).reshape(-1, 1)))
+		member_uncertainty_pred_n_m_one[idx_feature] = uncertainty_pred
 
 	# Vote count
 	final_query = vote_count(votes, batch_size)
@@ -90,7 +97,7 @@ for iteration in range(nb_iterations):
 		else:
 			query_sorted += 1
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], query_sorted, reg_stra, iteration, display = False, save = True)
+	# plot_highest_target(y_sorted[:, 0], query_sorted, reg_stra, iteration, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -111,4 +118,5 @@ plt.show()
 """
 
 # r2
-plot_r2(member_sets, feature_columns, reg_stra, display = True, save = False)
+plot_r2(member_sets, 3, feature_columns, reg_stra, display = True, save = False)
+plot_r2(member_sets, 4, feature_columns, reg_stra, display = True, save = False)
