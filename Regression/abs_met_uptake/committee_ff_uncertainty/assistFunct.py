@@ -78,18 +78,18 @@ def check_images_dir(dir):
 	os.makedirs('./images', exist_ok = True)
 	os.makedirs('./images/' + dir, exist_ok = True)
 
-def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch_size, iteration, lines = 4, columns = 4, display = False, save = False):
-	check_images_dir('plot_values/' + reg_stra)
+def plot_values(member_sets, X_test, y_test, X, batch_size, iteration, lines = 4, columns = 4, display = False, save = False):
+	check_images_dir('plot_values/')
 
 	fig, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
-	for idx_feature in range(len(feature_columns)):
-		X_train, y_train, y_pred = member_sets[idx_feature][0], member_sets[idx_feature][1], member_sets[idx_feature][2]
-		axs[l, c].scatter(X[:, idx_feature], y_pred, color = 'Red', label = 'Predicted data', s = 8)
-		axs[l, c].scatter(X_test[:, idx_feature], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 5)
+	for idx_model in range(lines * columns):
+		X_train, y_train, y_pred = member_sets[idx_model][0], member_sets[idx_model][1], member_sets[idx_model][2]
+		axs[l, c].scatter(X[:, idx_model], y_pred, color = 'Red', label = 'Predicted data', s = 8)
+		axs[l, c].scatter(X_test[:, idx_model], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 5)
 		axs[l, c].scatter(X_train[: - 2 * batch_size], y_train[: - 2 * batch_size], color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
 		axs[l, c].scatter(X_train[-2 * batch_size:], y_train[-2 * batch_size:], color = 'Green', label = 'Last train data added', s = 10)
-		axs[l, c].set_title(feature_columns[idx_feature])
+		axs[l, c].set_title(feature_columns[idx_model])
 		if l == lines - 1:
 			l = 0
 			c += 1
@@ -99,18 +99,18 @@ def plot_values(member_sets, X_test, y_test, X, feature_columns, reg_stra, batch
 	if display:
 		plt.show()
 	if save:
-		plt.savefig('images/plot_values/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		plt.savefig('images/plot_values/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_r2(r2_scores, idx, feature_columns, reg_stra, lines = 4, columns = 4, display = False, save = True):
-	check_images_dir('plot_r2/' + reg_stra)
+def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = True):
+	check_images_dir('plot_r2/')
 
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
-	for idx_feature in range(len(feature_columns)):
-		axs[l, c].plot(range(len(r2_scores[idx_feature][idx])), r2_scores[idx_feature][idx])
-		axs[l, c].set_title('Model (' + reg_stra + ') ' + str(idx_feature))
+	for idx_model in range(lines * columns):
+		axs[l, c].plot(range(len(member_sets[idx_model][idx])), member_sets[idx_model][idx])
+		axs[l, c].set_title('Model (' + member_sets[idx_model][5] + ') ' + str(idx_model))
 		if l == lines - 1:
 			l = 0
 			c += 1
@@ -120,12 +120,12 @@ def plot_r2(r2_scores, idx, feature_columns, reg_stra, lines = 4, columns = 4, d
 	if display:
 		plt.show()
 	if save:
-		plt.savefig('images/plot_r2/' + reg_stra + '.png', dpi=300)
+		plt.savefig('images/plot_r2.png', dpi=300)
 
 	plt.close()
 
-def plot_highest_target(y_sorted, best_query, reg_stra, iteration, display = False, save = True):
-	check_images_dir('plot_highest_target/' + reg_stra)
+def plot_highest_target(y_sorted, best_query, iteration, display = False, save = True):
+	check_images_dir('plot_highest_target/')
 	
 	plt.figure()
 	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
@@ -134,7 +134,7 @@ def plot_highest_target(y_sorted, best_query, reg_stra, iteration, display = Fal
 	if display:
 		plt.show()
 	if save:
-		plt.savefig('images/plot_highest_target/' + reg_stra + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		plt.savefig('images/plot_highest_target/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 

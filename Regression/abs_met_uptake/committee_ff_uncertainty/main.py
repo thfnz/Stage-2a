@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score
 from assistFunct import *
 from query_strategies import *
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore") # Skip convergence warnings
 
 # X, y : full untouched dataset
 # X_test, (y_test) : unlabeled dataset
@@ -37,42 +37,52 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet)
-reg_stra = 'elasticNet'
+reg_stra = ['elasticNet', 'randomForest']
 
-# AL
+# AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 40
 batch_size = 10
 # threshold = 1e-3
 
+# Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
+used_to_train = [False for i in range(len(y_argsorted))]
+
 # Random training sets
+nb_members = len(feature_columns)
 member_sets = [] # Training datasets for each member of the committee
 n_init = 50
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (len(feature_columns) * n_init) / 69840))
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
-for idx_feature in range(len(feature_columns)):
-	X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
-	member_sets.append([X_train_feature, y_train_feature, 0, [], []]) # 0, [] = Placeholder for y_pred and r2_scores
-	X_train, y_train = delete_data(X_train, y_train, idx_init)
+for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
+	for idx_model in range(nb_members // len(reg_stra)):
+		X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
+		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[idx_reg_stra]]) # 0, [] = Placeholder for y_pred and r2_scores
+		X_train, y_train = delete_data(X_train, y_train, idx_init)
+if (nb_members % len(reg_stra)) != 0:
+	for idx_model in range(nb_members % len(reg_stra)):
+		X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
+		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[0]]) # 0, [] = Placeholder for y_pred and r2_scores
+		X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 # Optional : pyprind progBar
 pbar = pyprind.ProgBar(nb_iterations, stream = sys.stdout)
 
 # AL
 qualities = []
-member_uncertainty_pred_n_m_one = [0 for elt in feature_columns]
+member_uncertainty_pred_n_m_one = [0 for i in range(nb_members)]
 
 for iteration in range(nb_iterations):
 	votes = []
 	# Calls for a vote on each model
-	for idx_feature in range(len(feature_columns)):
+	for idx_model in range(nb_members):
 		# Extract datasets from member_sets (note : Overwrite X_train and y_train isn't a issue because they have been already depleted from the "Random training sets" process)
-		X_train, y_train = member_sets[idx_feature][0], member_sets[idx_feature][1]
+		X_train, y_train = member_sets[idx_model][0], member_sets[idx_model][1]
 
 		# Vote
-		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], reg_stra, 1, batch_size, display = False)
+		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], member_sets[idx_model][5], 1, batch_size, display = False)
 		votes.append(query)
-		member_sets[idx_feature][2] = y_pred
-		member_sets[idx_feature][3].append(r2_score_y)
+		member_sets[idx_model][2] = y_pred
+		member_sets[idx_model][3].append(r2_score_y)
 
 		# r2_score on train only
 		# if iteration > 0:
@@ -84,9 +94,9 @@ for iteration in range(nb_iterations):
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
-	for idx_feature in range(len(feature_columns)):
+	for idx_model in range(nb_members):
 		# Extract datasets from member_sets
-		y_pred = member_sets[idx_feature][2]
+		y_pred = member_sets[idx_model][2]
 		query = np.argsort(y_pred)[-1]
 		votes.append([[query, 1]])
 	idx_highest_target = vote_count(votes, 1)
@@ -99,14 +109,14 @@ for iteration in range(nb_iterations):
 		else:
 			query_sorted += 1
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], query_sorted, reg_stra, iteration, display = False, save = True)
+	plot_highest_target(y_sorted[:, 0], query_sorted, iteration, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
 
 	# New datasets
-	for idx_feature in range(len(feature_columns)):
-		member_sets[idx_feature][0], member_sets[idx_feature][1] = new_datasets(member_sets[idx_feature][0], member_sets[idx_feature][1], X_test, y_test[:, 0], final_query)
+	for idx_model in range(nb_members):
+		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query)
 	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
 
 	# Optional : pyprind progBar
@@ -115,8 +125,9 @@ for iteration in range(nb_iterations):
 # Quality 
 plt.figure()
 plt.plot(range(len(qualities)), qualities)
+plt.ylim(0.90, 1.01)
 plt.show()
 
 # r2
-plot_r2(member_sets, 3, feature_columns, reg_stra, display = True, save = False)
-# plot_r2(member_sets, 4, feature_columns, reg_stra, display = True, save = False)
+plot_r2(member_sets, 3, lines = 4, columns = 4, display = True, save = False)
+# plot_r2(member_sets, 4, display = True, save = False)
