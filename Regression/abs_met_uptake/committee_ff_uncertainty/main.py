@@ -37,10 +37,10 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet)
-reg_stra = ['elasticNet', 'randomForest']
+reg_stra = ['elasticNetCV', 'randomForest']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 40
+nb_iterations = 20
 batch_size = 10
 # threshold = 1e-3
 
@@ -50,7 +50,7 @@ used_to_train = [False for i in range(len(y_argsorted))]
 # Random training sets
 nb_members = len(feature_columns)
 member_sets = [] # Training datasets for each member of the committee
-n_init = 50
+n_init = 10
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -77,7 +77,7 @@ for iteration in range(nb_iterations):
 	for idx_model in range(nb_members):
 		# Extract datasets from member_sets (note : Overwrite X_train and y_train isn't a issue because they have been already depleted from the "Random training sets" process)
 		X_train, y_train = member_sets[idx_model][0], member_sets[idx_model][1]
-
+		print(member_sets[idx_model][5])
 		# Vote
 		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], member_sets[idx_model][5], 1, batch_size, display = False)
 		votes.append(query)

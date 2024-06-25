@@ -13,9 +13,11 @@ def regression_strategy(reg_stra, alpha):
 
 		case 'elasticNet':
 			model = make_pipeline(PolynomialFeatures(), StandardScaler(), ElasticNet(alpha = alpha))
-			# cv = RepeatedKFold(n_splits = 10, n_repeats = 3, random_state = None)
-			# ratios = np.arange(1, 10, 1)
-			# alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.0, 1.0, 10.0, 100.0]
-			# model = make_pipeline(PolynomialFeatures(), StandardScaler(), ElasticNetCV(l1_ratio = ratios, n_alphas = 10, cv = cv, n_jobs = -1))
+
+		case 'elasticNetCV':
+			cv = RepeatedKFold(n_splits = 5, n_repeats = 1, random_state = None)
+			ratios = np.arange(1, 10, 1)
+			alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.0, 1.0, 10.0, 100.0]
+			model = make_pipeline(PolynomialFeatures(), StandardScaler(), ElasticNetCV(l1_ratio = ratios, alphas = alphas, cv = cv, n_jobs = -1))
 
 	return model
