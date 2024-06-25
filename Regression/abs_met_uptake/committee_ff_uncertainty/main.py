@@ -3,11 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyprind
 import sys
+import warnings
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 
 from assistFunct import *
 from query_strategies import *
+
+warnings.filterwarnings("ignore")
 
 # X, y : full untouched dataset
 # X_test, (y_test) : unlabeled dataset
@@ -28,7 +31,6 @@ y = np.array([[y[i], int(i)]for i in range(len(y))]) # Add absolute indices to y
 
 # Bad sorting of y in order to keep the absolute indices (used for evaluation)
 y_sorted = np.zeros((len(y_argsorted), 2))
-
 i = 0
 for idx in y_argsorted:
 	y_sorted[i] = y[idx]
@@ -36,7 +38,6 @@ for idx in y_argsorted:
 
 # Model selection (randomForest - elasticNet)
 reg_stra = 'elasticNet'
-# alphas = [1 * (10 ** i) for i in range(len(feature_columns))]
 
 # AL
 nb_iterations = 40
@@ -45,7 +46,7 @@ batch_size = 10
 
 # Random training sets
 member_sets = [] # Training datasets for each member of the committee
-n_init = 5
+n_init = 50
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (len(feature_columns) * n_init) / 69840))
 
 for idx_feature in range(len(feature_columns)):
@@ -74,9 +75,9 @@ for iteration in range(nb_iterations):
 		member_sets[idx_feature][3].append(r2_score_y)
 
 		# r2_score on train only
-		if iteration > 0:
-			member_sets[idx_feature][4].append(r2_score(uncertainty_pred.reshape(-1, 1), np.delete(member_uncertainty_pred_n_m_one[idx_feature], final_query).reshape(-1, 1)))
-		member_uncertainty_pred_n_m_one[idx_feature] = uncertainty_pred
+		# if iteration > 0:
+		# 	member_sets[idx_feature][4].append(r2_score(uncertainty_pred.reshape(-1, 1), np.delete(member_uncertainty_pred_n_m_one[idx_feature], final_query).reshape(-1, 1)))
+		# member_uncertainty_pred_n_m_one[idx_feature] = uncertainty_pred
 
 	# Vote count
 	final_query = vote_count(votes, batch_size)
@@ -87,7 +88,7 @@ for iteration in range(nb_iterations):
 		# Extract datasets from member_sets
 		y_pred = member_sets[idx_feature][2]
 		query = np.argsort(y_pred)[-1]
-		votes.append([query])
+		votes.append([[query, 1]])
 	idx_highest_target = vote_count(votes, 1)
 	# Find the indice of the best query's value in y_sorted (Bad practice ! There must be a better (and smarter) way)
 	found = False
@@ -112,12 +113,10 @@ for iteration in range(nb_iterations):
 	pbar.update()
 
 # Quality 
-"""
 plt.figure()
 plt.plot(range(len(qualities)), qualities)
 plt.show()
-"""
 
 # r2
 plot_r2(member_sets, 3, feature_columns, reg_stra, display = True, save = False)
-plot_r2(member_sets, 4, feature_columns, reg_stra, display = True, save = False)
+# plot_r2(member_sets, 4, feature_columns, reg_stra, display = True, save = False)

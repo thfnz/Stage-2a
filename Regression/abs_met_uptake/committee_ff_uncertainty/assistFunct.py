@@ -19,7 +19,7 @@ def ask_oracle(y_test, query):
 	return y_test[query]
 
 def new_datasets(X_train, y_train, X_test, y_test, query):
-	## TODO implement threshold (and uncertainties :)) + implementation proba index (at the end)
+	## TODO implement threshold
 	# Labeling
 	answer = ask_oracle(y_test, query)
 
@@ -35,16 +35,16 @@ def vote_count(votes, batch_size):
 	# Vote count for each candidate
 	count = [] # = [[candidate, number of votes], ..., [candidate, number of votes]]
 	for query in votes:
-		for candidate in query:
+		for candidate in query: # candidate = [idx, weight of the vote]
 			alreadyInCount = False
 			i = 0
 			while not alreadyInCount and i < len(count):
-				if candidate == count[i][0]:
-					count[i][1] = count[i][1] + 1
+				if candidate[0] == count[i][0]:
+					count[i][1] = count[i][1] + candidate[1]
 					alreadyInCount = True
 				i += 1
 			if not alreadyInCount:
-				count.append([candidate, 1])
+				count.append(candidate)
 
 	# List all the winners
 	final_query = []
@@ -110,7 +110,7 @@ def plot_r2(r2_scores, idx, feature_columns, reg_stra, lines = 4, columns = 4, d
 	l, c = 0, 0
 	for idx_feature in range(len(feature_columns)):
 		axs[l, c].plot(range(len(r2_scores[idx_feature][idx])), r2_scores[idx_feature][idx])
-		axs[l, c].set_title(feature_columns[idx_feature])
+		axs[l, c].set_title('Model (' + reg_stra + ') ' + str(idx_feature))
 		if l == lines - 1:
 			l = 0
 			c += 1
