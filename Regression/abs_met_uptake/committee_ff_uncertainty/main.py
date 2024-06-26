@@ -41,7 +41,8 @@ reg_stra = ['elasticNet']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 30
-batch_size = 5
+batch_size = 10
+batch_size_highest_value = 5
 # threshold = 1e-3
 
 # Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
@@ -50,7 +51,7 @@ used_to_train = [False for i in range(len(y_argsorted))]
 # Random training sets
 nb_members = len(feature_columns)
 member_sets = [] # Training datasets for each member of the committee
-n_init = 10
+n_init = 50
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -91,6 +92,17 @@ for iteration in range(nb_iterations):
 
 	# Vote count
 	final_query = vote_count(votes, batch_size)
+	print(final_query)
+
+	# Query highest predicted value
+	votes = []
+	for idx_model in range(nb_members):
+		X_train, y_train = member_sets[idx_model][0], member_sets[idx_model][1]
+		query = query_target_max_value(X_train, y_train, X_test, member_sets[idx_model][5], 1, batch_size_highest_value, display = False)
+		votes.append(query)
+	for candidate in vote_count(votes, batch_size_highest_value):
+		final_query.append(candidate)
+	print(final_query)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -141,6 +153,5 @@ plt.show()
 # r2
 plot_r2(member_sets, 3, lines = 4, columns = 4, display = False, save = True)
 # plot_r2(member_sets, 4, display = True, save = False)
-
 
 

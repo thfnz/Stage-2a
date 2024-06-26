@@ -22,9 +22,9 @@ def query_target_max_value(X_train, y_train, X_test, reg_stra, alpha, batch_size
 	y_pred = model.predict(X_test)
 
 	# Indice of maximum predicted value
-	query = np.argsort(y_pred)[-batch_size:]
+	query = [[np.argsort(y_pred)[-i], 1]for i in range(batch_size)]
 
-	return y_pred, query
+	return query
 
 # Uncertainty
 
