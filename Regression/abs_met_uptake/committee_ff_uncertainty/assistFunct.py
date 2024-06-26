@@ -79,16 +79,14 @@ def check_images_dir(dir):
 	os.makedirs('./images/' + dir, exist_ok = True)
 
 def plot_values(member_sets, X_test, y_test, X, batch_size, iteration, lines = 4, columns = 4, display = False, save = False):
-	check_images_dir('plot_values/')
-
 	fig, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
 		X_train, y_train, y_pred = member_sets[idx_model][0], member_sets[idx_model][1], member_sets[idx_model][2]
 		axs[l, c].scatter(X[:, idx_model], y_pred, color = 'Red', label = 'Predicted data', s = 8)
 		axs[l, c].scatter(X_test[:, idx_model], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 5)
-		axs[l, c].scatter(X_train[: - 2 * batch_size], y_train[: - 2 * batch_size], color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
-		axs[l, c].scatter(X_train[-2 * batch_size:], y_train[-2 * batch_size:], color = 'Green', label = 'Last train data added', s = 10)
+		axs[l, c].scatter(X_train[:-batch_size], y_train[:-batch_size], color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
+		axs[l, c].scatter(X_train[batch_size:], y_train[batch_size:], color = 'Green', label = 'Last train data added', s = 10)
 		axs[l, c].set_title(feature_columns[idx_model])
 		if l == lines - 1:
 			l = 0
@@ -99,13 +97,12 @@ def plot_values(member_sets, X_test, y_test, X, batch_size, iteration, lines = 4
 	if display:
 		plt.show()
 	if save:
+		check_images_dir('plot_values/')
 		plt.savefig('images/plot_values/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = True):
-	check_images_dir('plot_r2/')
-
+def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = False):
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
@@ -120,13 +117,12 @@ def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = Tr
 	if display:
 		plt.show()
 	if save:
+		# check_images_dir('plot_r2/')
 		plt.savefig('images/plot_r2.png', dpi=300)
 
 	plt.close()
 
-def plot_highest_target(y_sorted, best_query, iteration, display = False, save = True):
-	check_images_dir('plot_highest_target/')
-	
+def plot_highest_target(y_sorted, best_query, iteration, display = False, save = False):
 	plt.figure()
 	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
 	plt.scatter(best_query, y_sorted[best_query], color = 'Red')
@@ -134,7 +130,26 @@ def plot_highest_target(y_sorted, best_query, iteration, display = False, save =
 	if display:
 		plt.show()
 	if save:
+		check_images_dir('plot_highest_target/')
 		plt.savefig('images/plot_highest_target/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
+
+def plot_comparison_best_target(y_pred_avg, y, iteration, display = False, save = False):
+	plt.figure()
+	plt.plot(np.arange(230, 270, 1), np.arange(230, 270, 1), color = 'Red', linewidth = 2)
+	plt.scatter(y_pred_avg, y, color = 'Black')
+	plt.xlabel('y_pred_avg')
+	plt.ylabel('y')
+
+	if display:
+		plt.show()
+		print('Mean error on the ' + str(len(y)) + ' best target values : ' + str(np.mean(np.absolute(y_pred_avg - y))))
+
+	if save:
+		check_images_dir('plot_comparison_best_target/')
+		plt.savefig('images/plot_comparison_best_target/iteration_' + str(iteration + 1) + '.png', dpi=300)
+
+	plt.close()
+
 

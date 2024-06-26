@@ -37,11 +37,11 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet)
-reg_stra = ['elasticNetCV', 'randomForest']
+reg_stra = ['elasticNet']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 20
-batch_size = 10
+nb_iterations = 30
+batch_size = 5
 # threshold = 1e-3
 
 # Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
@@ -77,7 +77,7 @@ for iteration in range(nb_iterations):
 	for idx_model in range(nb_members):
 		# Extract datasets from member_sets (note : Overwrite X_train and y_train isn't a issue because they have been already depleted from the "Random training sets" process)
 		X_train, y_train = member_sets[idx_model][0], member_sets[idx_model][1]
-		print(member_sets[idx_model][5])
+
 		# Vote
 		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], member_sets[idx_model][5], 1, batch_size, display = False)
 		votes.append(query)
@@ -111,6 +111,16 @@ for iteration in range(nb_iterations):
 	# Plot highest target
 	plot_highest_target(y_sorted[:, 0], query_sorted, iteration, display = False, save = True)
 
+	# Plot y_true(y_pred_avg) for the n_top best target values
+	n_top = 50
+	y_pred_avg = []
+	for i in range(len(y_pred)):
+		somme = 0
+		for idx_model in range(nb_members):
+			somme += member_sets[idx_model][2][i]
+		y_pred_avg.append(somme / nb_members)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], iteration, display = False, save = True)
+
 	# Quality
 	qualities.append(query_sorted / len(y))
 
@@ -129,5 +139,8 @@ plt.ylim(0.90, 1.01)
 plt.show()
 
 # r2
-plot_r2(member_sets, 3, lines = 4, columns = 4, display = True, save = False)
+plot_r2(member_sets, 3, lines = 4, columns = 4, display = False, save = True)
 # plot_r2(member_sets, 4, display = True, save = False)
+
+
+
