@@ -92,7 +92,6 @@ for iteration in range(nb_iterations):
 
 	# Vote count
 	final_query = vote_count(votes, batch_size)
-	print(final_query)
 
 	# Query highest predicted value
 	votes = []
@@ -102,7 +101,6 @@ for iteration in range(nb_iterations):
 		votes.append(query)
 	for candidate in vote_count(votes, batch_size_highest_value):
 		final_query.append(candidate)
-	print(final_query)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -132,6 +130,9 @@ for iteration in range(nb_iterations):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
 	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], iteration, display = False, save = True)
+
+	# Plot values
+	plot_values(member_sets, X_test, y_test[:, 0], X, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))

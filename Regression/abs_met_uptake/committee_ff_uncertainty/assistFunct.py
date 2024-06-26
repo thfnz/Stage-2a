@@ -78,16 +78,17 @@ def check_images_dir(dir):
 	os.makedirs('./images', exist_ok = True)
 	os.makedirs('./images/' + dir, exist_ok = True)
 
-def plot_values(member_sets, X_test, y_test, X, batch_size, iteration, lines = 4, columns = 4, display = False, save = False):
+def plot_values(member_sets, X_test, y_test, X, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False):
 	fig, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
 		X_train, y_train, y_pred = member_sets[idx_model][0], member_sets[idx_model][1], member_sets[idx_model][2]
-		axs[l, c].scatter(X[:, idx_model], y_pred, color = 'Red', label = 'Predicted data', s = 8)
-		axs[l, c].scatter(X_test[:, idx_model], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 5)
-		axs[l, c].scatter(X_train[:-batch_size], y_train[:-batch_size], color = 'Blue', label = 'Train data', alpha = 0.5, s = 5)
-		axs[l, c].scatter(X_train[batch_size:], y_train[batch_size:], color = 'Green', label = 'Last train data added', s = 10)
-		axs[l, c].set_title(feature_columns[idx_model])
+		# axs[l, c].scatter(X[:, idx_model], y_pred, color = 'Green', label = 'Predicted data', s = 8)
+		axs[l, c].scatter(X_test[:, idx_model], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[(batch_size + batch_size_highest_value):, idx_model], y_train[(batch_size + batch_size_highest_value):], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value, idx_model], y_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value], color = 'Red', label = 'Last train data added', s = 4)
+		axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_model], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added', s = 4)
+		axs[l, c].set_title('Model (' + member_sets[idx_model][5] + ') ' + str(idx_model))
 		if l == lines - 1:
 			l = 0
 			c += 1
