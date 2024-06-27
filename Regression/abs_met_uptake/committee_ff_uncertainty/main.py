@@ -36,11 +36,11 @@ for idx in y_argsorted:
 	y_sorted[i] = y[idx]
 	i += 1
 
-# Model selection (randomForest - elasticNet)
-reg_stra = ['randomForest']
+# Model selection (randomForest - elasticNet - elasticNetCV - XGB)
+reg_stra = ['XGB']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 50
+nb_iterations = 100
 batch_size = 1
 batch_size_highest_value = 0
 # threshold = 1e-3
@@ -49,9 +49,9 @@ batch_size_highest_value = 0
 used_to_train = [False for i in range(len(y_argsorted))]
 
 # Random training sets
-nb_members = 20
+nb_members = 10
 member_sets = [] # Training datasets for each member of the committee
-n_init = 10
+n_init = 5
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -111,7 +111,7 @@ for iteration in range(nb_iterations):
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
-	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -138,10 +138,10 @@ for iteration in range(nb_iterations):
 	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str((in_top / n_top) * 100) + '%')
 
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
+	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False)
 
 	# Plot values
-	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = True)
+	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -158,10 +158,10 @@ for iteration in range(nb_iterations):
 plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, display = True, save = True)
 
 # Quality 
-plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = True)
+plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = False)
 
 # r2
-plot_r2(member_sets, 3, lines = 4, columns = 5, display = False, save = True)
+plot_r2(member_sets, 3, lines = 2, columns = 5, display = False, save = True)
 # plot_r2(member_sets, 4, display = False, save = False)
 
 
