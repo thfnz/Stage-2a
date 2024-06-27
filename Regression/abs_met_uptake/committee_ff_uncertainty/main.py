@@ -104,14 +104,14 @@ for iteration in range(nb_iterations):
 		final_query.append(candidate)
 
 	# Plot y_true(y_pred_avg) for the n_top best target values
-	n_top = 50
+	n_top = 100
 	y_pred_avg = []
 	for i in range(len(y_pred)):
 		somme = 0
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
-	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], iteration, display = False, save = False)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -135,13 +135,13 @@ for iteration in range(nb_iterations):
 			else:
 				query_sorted += 1
 	accuracies.append(in_top)
-	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str(in_top) + '%')
+	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str((in_top / n_top) * 100) + '%')
 
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, iteration, display = False, save = False)
+	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
 
 	# Plot values
-	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False)
+	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -155,13 +155,13 @@ for iteration in range(nb_iterations):
 	#pbar.update()
 
 # Accuracies
-plot_top_n_accuracy(accuracies, display = True, save = False)
+plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, display = True, save = True)
 
 # Quality 
-plot_quality(qualities, display = False, save = False)
+plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = True)
 
 # r2
-plot_r2(member_sets, 3, lines = 4, columns = 5, display = False, save = False)
-# plot_r2(member_sets, 4, display = True, save = False)
+plot_r2(member_sets, 3, lines = 4, columns = 5, display = False, save = True)
+# plot_r2(member_sets, 4, display = False, save = False)
 
 

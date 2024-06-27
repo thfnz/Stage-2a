@@ -124,10 +124,12 @@ def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = Fa
 
 	plt.close()
 
-def plot_highest_target(y_sorted, y_pred_avg, best_query, iteration, display = False, save = False):
+def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False):
 	plt.figure()
 	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
 	plt.scatter(best_query, y_pred_avg[best_query], color = 'Red')
+	if iteration == 0:
+		plt.title('Highest target\niteration : ' + str(iteration + 1) + ' - batch_size : ' + str(batch_size) + '\nbatch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 	if display:
 		plt.show()
@@ -137,12 +139,14 @@ def plot_highest_target(y_sorted, y_pred_avg, best_query, iteration, display = F
 
 	plt.close()
 
-def plot_comparison_best_target(y_pred_avg, y, iteration, display = False, save = False):
+def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False):
 	plt.figure()
 	plt.plot(np.arange(250, 300, 1), np.arange(250, 300, 1), color = 'Red', linewidth = 2)
 	plt.scatter(y_pred_avg, y, color = 'Black')
 	plt.xlabel('y_pred_avg')
 	plt.ylabel('y')
+	if iteration == 0:
+		plt.title('Comparison best targets\niteration : ' + str(iteration + 1) + ' - batch_size : ' + str(batch_size) + '\nbatch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 	if display:
 		plt.show()
@@ -154,13 +158,13 @@ def plot_comparison_best_target(y_pred_avg, y, iteration, display = False, save 
 
 	plt.close()
 
-def plot_quality(qualities, display = False, save = False):
+def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = False):
 	plt.figure()
 	plt.plot(range(len(qualities)), qualities)
 	plt.ylim(0.90, 1.01)
 	plt.xlabel('Iteration')
 	plt.ylabel('Position')
-	plt.set_title('Position of the highest predicted target value in y_argsorted')
+	plt.title('Position of the highest predicted target value in y_argsorted\nbatch_size : ' + str(batch_size) + ' - batch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 	if display:
 		plt.show()
@@ -170,12 +174,12 @@ def plot_quality(qualities, display = False, save = False):
 
 	plt.close()
 
-def plot_top_n_accuracy(accuracies, display = False, save = False):
+def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, display = False, save = False):
 	plt.figure()
 	plt.plot(range(len(accuracies)), accuracies)
 	plt.xlabel('Iteration')
 	plt.ylabel('Accuracy')
-	plt.set_title('Accuracy for the top ' + len(accuracies) + ' instances')
+	plt.title('Accuracy for the top ' + len(accuracies) + ' instances\nbatch_size : ' + str(batch_size) + ' - batch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 	if display:
 		plt.show()
