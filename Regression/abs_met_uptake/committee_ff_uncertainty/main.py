@@ -37,21 +37,21 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet)
-reg_stra = ['elasticNet']
+reg_stra = ['randomForest']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 30
-batch_size = 10
-batch_size_highest_value = 5
+nb_iterations = 50
+batch_size = 1
+batch_size_highest_value = 0
 # threshold = 1e-3
 
 # Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
 used_to_train = [False for i in range(len(y_argsorted))]
 
 # Random training sets
-nb_members = len(feature_columns)
+nb_members = 20
 member_sets = [] # Training datasets for each member of the committee
-n_init = 50
+n_init = 10
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -69,6 +69,7 @@ if (nb_members % len(reg_stra)) != 0:
 pbar = pyprind.ProgBar(nb_iterations, stream = sys.stdout)
 
 # AL
+accuracies = []
 qualities = []
 member_uncertainty_pred_n_m_one = [0 for i in range(nb_members)]
 
@@ -102,25 +103,6 @@ for iteration in range(nb_iterations):
 	for candidate in vote_count(votes, batch_size_highest_value):
 		final_query.append(candidate)
 
-	# Evaluation of the model (Search for the highest target value)
-	votes = []
-	for idx_model in range(nb_members):
-		# Extract datasets from member_sets
-		y_pred = member_sets[idx_model][2]
-		query = np.argsort(y_pred)[-1]
-		votes.append([[query, 1]])
-	idx_highest_target = vote_count(votes, 1)
-	# Find the indice of the best query's value in y_sorted (Bad practice ! There must be a better (and smarter) way)
-	found = False
-	query_sorted = 0
-	while not found:
-		if idx_highest_target == y_sorted[query_sorted, 1]:
-			found = True
-		else:
-			query_sorted += 1
-	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], query_sorted, iteration, display = False, save = True)
-
 	# Plot y_true(y_pred_avg) for the n_top best target values
 	n_top = 50
 	y_pred_avg = []
@@ -129,10 +111,37 @@ for iteration in range(nb_iterations):
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
-	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], iteration, display = False, save = True)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], iteration, display = False, save = False)
+
+	# Evaluation of the model (Search for the highest target value)
+	votes = []
+	for idx_model in range(nb_members):
+		# Extract datasets from member_sets
+		y_pred = member_sets[idx_model][2]
+		query = np.argsort(y_pred)[-n_top:]
+		for idx_query in query:
+			votes.append([[idx_query, 1]])
+	list_idx_highest_target = vote_count(votes, n_top)
+	# Find the indice of the best query's value in y_sorted (Bad practice ! There must be a better (and smarter) way
+	in_top = 0
+	for idx_highest_target in list_idx_highest_target:
+		found = False
+		query_sorted = 0
+		while not found:
+			if idx_highest_target == y_sorted[query_sorted, 1]:
+				found = True
+				if query_sorted > len(y[:, 0]) - (n_top + 1):
+					in_top += 1
+			else:
+				query_sorted += 1
+	accuracies.append(in_top)
+	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str(in_top) + '%')
+
+	# Plot highest target
+	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, iteration, display = False, save = False)
 
 	# Plot values
-	plot_values(member_sets, X_test, y_test[:, 0], X, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = True)
+	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -143,16 +152,16 @@ for iteration in range(nb_iterations):
 	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
 
 	# Optional : pyprind progBar
-	pbar.update()
+	#pbar.update()
+
+# Accuracies
+plot_top_n_accuracy(accuracies, display = True, save = False)
 
 # Quality 
-plt.figure()
-plt.plot(range(len(qualities)), qualities)
-plt.ylim(0.90, 1.01)
-plt.show()
+plot_quality(qualities, display = False, save = False)
 
 # r2
-plot_r2(member_sets, 3, lines = 4, columns = 4, display = False, save = True)
+plot_r2(member_sets, 3, lines = 4, columns = 5, display = False, save = False)
 # plot_r2(member_sets, 4, display = True, save = False)
 
 

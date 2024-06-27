@@ -78,17 +78,18 @@ def check_images_dir(dir):
 	os.makedirs('./images', exist_ok = True)
 	os.makedirs('./images/' + dir, exist_ok = True)
 
-def plot_values(member_sets, X_test, y_test, X, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False):
-	fig, axs = plt.subplots(lines, columns)
+def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False):
+	fig, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
-	for idx_model in range(lines * columns):
-		X_train, y_train, y_pred = member_sets[idx_model][0], member_sets[idx_model][1], member_sets[idx_model][2]
-		# axs[l, c].scatter(X[:, idx_model], y_pred, color = 'Green', label = 'Predicted data', s = 8)
-		axs[l, c].scatter(X_test[:, idx_model], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 1)
-		axs[l, c].scatter(X_train[(batch_size + batch_size_highest_value):, idx_model], y_train[(batch_size + batch_size_highest_value):], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
-		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value, idx_model], y_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value], color = 'Red', label = 'Last train data added', s = 4)
-		axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_model], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added', s = 4)
-		axs[l, c].set_title('Model (' + member_sets[idx_model][5] + ') ' + str(idx_model))
+	for idx_feature in range(lines * columns):
+		X_train, y_train, y_pred = member_sets[idx_feature][0], member_sets[idx_feature][1], member_sets[idx_feature][2]
+		# axs[l, c].scatter(X[:, idx_feature], y_pred, color = 'Green', label = 'Predicted data', s = 8)
+		axs[l, c].scatter(X_test[:, idx_feature], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[n_init:-(batch_size + batch_size_highest_value), idx_feature], y_train[n_init:-(batch_size + batch_size_highest_value)], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value, idx_feature], y_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value], color = 'Red', label = 'Last train data added (uncertainty)', s = 4)
+		axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_feature], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added (highest pred value)', s = 4)
+		axs[l, c].scatter(X[np.argsort(y_pred_avg)[-1], idx_feature], y_pred_avg[-1], color = 'm', label = 'Highest predicted value', s = 8)
+		axs[l, c].set_title(feature_columns[idx_feature])
 		if l == lines - 1:
 			l = 0
 			c += 1
@@ -123,10 +124,10 @@ def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = Fa
 
 	plt.close()
 
-def plot_highest_target(y_sorted, best_query, iteration, display = False, save = False):
+def plot_highest_target(y_sorted, y_pred_avg, best_query, iteration, display = False, save = False):
 	plt.figure()
 	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
-	plt.scatter(best_query, y_sorted[best_query], color = 'Red')
+	plt.scatter(best_query, y_pred_avg[best_query], color = 'Red')
 
 	if display:
 		plt.show()
@@ -138,7 +139,7 @@ def plot_highest_target(y_sorted, best_query, iteration, display = False, save =
 
 def plot_comparison_best_target(y_pred_avg, y, iteration, display = False, save = False):
 	plt.figure()
-	plt.plot(np.arange(230, 270, 1), np.arange(230, 270, 1), color = 'Red', linewidth = 2)
+	plt.plot(np.arange(250, 300, 1), np.arange(250, 300, 1), color = 'Red', linewidth = 2)
 	plt.scatter(y_pred_avg, y, color = 'Black')
 	plt.xlabel('y_pred_avg')
 	plt.ylabel('y')
@@ -153,4 +154,33 @@ def plot_comparison_best_target(y_pred_avg, y, iteration, display = False, save 
 
 	plt.close()
 
+def plot_quality(qualities, display = False, save = False):
+	plt.figure()
+	plt.plot(range(len(qualities)), qualities)
+	plt.ylim(0.90, 1.01)
+	plt.xlabel('Iteration')
+	plt.ylabel('Position')
+	plt.set_title('Position of the highest predicted target value in y_argsorted')
 
+	if display:
+		plt.show()
+
+	if save:
+		plt.savefig('images/plot_quality.png', dpi=300)
+
+	plt.close()
+
+def plot_top_n_accuracy(accuracies, display = False, save = False):
+	plt.figure()
+	plt.plot(range(len(accuracies)), accuracies)
+	plt.xlabel('Iteration')
+	plt.ylabel('Accuracy')
+	plt.set_title('Accuracy for the top ' + len(accuracies) + ' instances')
+
+	if display:
+		plt.show()
+
+	if save:
+		plt.savefig('images/plot_top_n_accuracy.png', dpi=300)
+
+	plt.close()
