@@ -40,8 +40,8 @@ for idx in y_argsorted:
 reg_stra = ['XGB']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 100
-batch_size = 1
+nb_iterations = 150
+batch_size = 10
 batch_size_highest_value = 0
 # threshold = 1e-3
 
@@ -49,7 +49,7 @@ batch_size_highest_value = 0
 used_to_train = [False for i in range(len(y_argsorted))]
 
 # Random training sets
-nb_members = 10
+nb_members = 12
 member_sets = [] # Training datasets for each member of the committee
 n_init = 5
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
@@ -111,7 +111,7 @@ for iteration in range(nb_iterations):
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
-	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -138,10 +138,7 @@ for iteration in range(nb_iterations):
 	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str((in_top / n_top) * 100) + '%')
 
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False)
-
-	# Plot values
-	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False)
+	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -151,17 +148,20 @@ for iteration in range(nb_iterations):
 		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query)
 	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
 
+	# Plot values
+	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = True)
+
 	# Optional : pyprind progBar
 	#pbar.update()
 
 # Accuracies
-plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, display = True, save = True)
+plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, display = True, save = True)
 
 # Quality 
-plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = False)
+plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = True)
 
 # r2
-plot_r2(member_sets, 3, lines = 2, columns = 5, display = False, save = True)
+plot_r2(member_sets, 3, batch_size, lines = 3, columns = 4, display = False, save = True)
 # plot_r2(member_sets, 4, display = False, save = False)
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import datetime
 
 def delete_data(X, y, query):
 	# Avoids repetition
@@ -81,13 +82,14 @@ def check_images_dir(dir):
 def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False):
 	fig, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
+	X_train, y_train = member_sets[0][0], member_sets[0][1]
 	for idx_feature in range(lines * columns):
-		X_train, y_train, y_pred = member_sets[idx_feature][0], member_sets[idx_feature][1], member_sets[idx_feature][2]
 		# axs[l, c].scatter(X[:, idx_feature], y_pred, color = 'Green', label = 'Predicted data', s = 8)
 		axs[l, c].scatter(X_test[:, idx_feature], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 1)
-		axs[l, c].scatter(X_train[n_init:-(batch_size + batch_size_highest_value), idx_feature], y_train[n_init:-(batch_size + batch_size_highest_value)], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
-		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value, idx_feature], y_train[-(batch_size + batch_size_highest_value):-batch_size_highest_value], color = 'Red', label = 'Last train data added (uncertainty)', s = 4)
-		axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_feature], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added (highest pred value)', s = 4)
+		#print(n_init, (batch_size + batch_size_highest_value))
+		axs[l, c].scatter(X_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1), idx_feature], y_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1)], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value) : len(X_train[:, 0]) - batch_size_highest_value, idx_feature], y_train[-(batch_size + batch_size_highest_value) : len(X_train[:, 0]) - batch_size_highest_value], color = 'Red', label = 'Last train data added (uncertainty)', s = 4)
+		# axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_feature], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added (highest pred value)', s = 4)
 		axs[l, c].scatter(X[np.argsort(y_pred_avg)[-1], idx_feature], y_pred_avg[-1], color = 'm', label = 'Highest predicted value', s = 8)
 		axs[l, c].set_title(feature_columns[idx_feature])
 		if l == lines - 1:
@@ -99,12 +101,12 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 	if display:
 		plt.show()
 	if save:
-		check_images_dir('plot_values/')
-		plt.savefig('images/plot_values/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		check_images_dir('plot_values_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/')
+		plt.savefig('images/plot_values_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = False):
+def plot_r2(member_sets, idx, batch_size, lines = 4, columns = 4, display = False, save = False):
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
@@ -120,7 +122,7 @@ def plot_r2(member_sets, idx, lines = 4, columns = 4, display = False, save = Fa
 		plt.show()
 	if save:
 		# check_images_dir('plot_r2/')
-		plt.savefig('images/plot_r2.png', dpi=300)
+		plt.savefig('images/plot_r2_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '.png', dpi=300)
 
 	plt.close()
 
@@ -134,8 +136,8 @@ def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size
 	if display:
 		plt.show()
 	if save:
-		check_images_dir('plot_highest_target/')
-		plt.savefig('images/plot_highest_target/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		check_images_dir('plot_highest_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/')
+		plt.savefig('images/plot_highest_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
@@ -153,8 +155,8 @@ def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_va
 		print('Mean error on the ' + str(len(y)) + ' best target values : ' + str(np.mean(np.absolute(y_pred_avg - y))))
 
 	if save:
-		check_images_dir('plot_comparison_best_target/')
-		plt.savefig('images/plot_comparison_best_target/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		check_images_dir('plot_comparison_best_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/')
+		plt.savefig('images/plot_comparison_best_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
@@ -170,21 +172,21 @@ def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, di
 		plt.show()
 
 	if save:
-		plt.savefig('images/plot_quality.png', dpi=300)
+		plt.savefig('images/plot_quality_bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, display = False, save = False):
+def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, display = False, save = False):
 	plt.figure()
 	plt.plot(range(len(accuracies)), accuracies)
 	plt.xlabel('Iteration')
 	plt.ylabel('Accuracy')
-	plt.title('Accuracy for the top ' + len(accuracies) + ' instances\nbatch_size : ' + str(batch_size) + ' - batch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
+	plt.title('Accuracy for the top ' + str(n_top) + ' instances\nbatch_size : ' + str(batch_size) + ' - batch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 	if display:
 		plt.show()
 
 	if save:
-		plt.savefig('images/plot_top_n_accuracy.png', dpi=300)
+		plt.savefig('images/plot_top_n_accuracy_bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
