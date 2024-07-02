@@ -111,7 +111,7 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 	plt.close()
 
 def plot_r2(member_sets, idx, batch_size, batch_size_highest_value, reg_stra, lines, columns, display = False, save = False):
-	fix, axs = plt.subplots(lines, columns)
+	fix, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
 		axs[l, c].plot(range(len(member_sets[idx_model][idx])), member_sets[idx_model][idx])
@@ -222,7 +222,7 @@ def plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_siz
 		mean_uncertainty.append(somme / nb_members)
 
 	plt.figure()
-	plt.scatter(range(len(mean_uncertainty)), mean_uncertainty)
+	plt.scatter(range(len(mean_uncertainty)), mean_uncertainty, s = 1)
 	thresh = [threshold for i in range(len(mean_uncertainty))]
 	plt.plot(range(len(mean_uncertainty)), thresh, color = 'Red')
 	plt.ylabel('Mean uncertainty')
@@ -243,11 +243,11 @@ def plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_siz
 	plt.close()
 
 def plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines, columns, display = False, save = False):
-	fix, axs = plt.subplots(lines, columns)
+	fix, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
 	thresh = [threshold for i in range(len(member_sets[0][6]))]
 	for idx_model in range(lines * columns):
-		axs[l, c].scatter(range(len(member_sets[idx_model][6])), member_sets[idx_model][6])
+		axs[l, c].scatter(range(len(member_sets[idx_model][6])), member_sets[idx_model][6], s = 1)
 		axs[l, c].plot(range(len(thresh)), thresh, color = 'Red')
 		axs[l, c].set_title('Model (' + member_sets[idx_model][5] + ') ' + str(idx_model))
 		if l == lines - 1:
