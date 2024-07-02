@@ -36,13 +36,13 @@ for idx in y_argsorted:
 	y_sorted[i] = y[idx]
 	i += 1
 
-# Model selection (randomForest - elasticNet - elasticNetCV - XGB)
-reg_stra = ['XGB', 'randomForest']
+# Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
+reg_stra = ['XGB', 'randomForest', 'SVR']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 100
 batch_size = 1
-batch_size_highest_value = 1
+batch_size_highest_value = 0
 # threshold = 1e-3
 
 # Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
