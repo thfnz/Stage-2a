@@ -77,9 +77,9 @@ def vote_count(votes, batch_size):
 
 def check_images_dir(dir):
 	os.makedirs('./images', exist_ok = True)
-	os.makedirs('./images/' + dir, exist_ok = True)
+	os.makedirs(dir, exist_ok = True)
 
-def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, lines = 4, columns = 4, display = False, save = False):
+def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, lines = 4, columns = 4, display = False, save = False):
 	fig, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
 	X_train, y_train = member_sets[0][0], member_sets[0][1]
@@ -101,12 +101,16 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 	if display:
 		plt.show()
 	if save:
-		check_images_dir('plot_values_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/')
-		plt.savefig('images/plot_values_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		path = './images/plot_values_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		path += 'bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/'
+		check_images_dir(path)
+		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_r2(member_sets, idx, batch_size, lines = 4, columns = 4, display = False, save = False):
+def plot_r2(member_sets, idx, batch_size, reg_stra, lines = 4, columns = 4, display = False, save = False):
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
@@ -122,11 +126,14 @@ def plot_r2(member_sets, idx, batch_size, lines = 4, columns = 4, display = Fals
 		plt.show()
 	if save:
 		# check_images_dir('plot_r2/')
-		plt.savefig('images/plot_r2_bs' + str(batch_size) + '_m' + str(len(member_sets)) + '.png', dpi=300)
+		path = 'images/plot_r2_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(len(member_sets)) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False):
+def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = False):
 	plt.figure()
 	plt.scatter(range(len(y_sorted)), y_sorted, color = 'Black')
 	plt.scatter(best_query, y_pred_avg[best_query], color = 'Red')
@@ -136,12 +143,16 @@ def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size
 	if display:
 		plt.show()
 	if save:
-		check_images_dir('plot_highest_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/')
-		plt.savefig('images/plot_highest_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		path = './images/plot_highest_target_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		path += 'bs' + str(batch_size) + '_m' + str(nb_members) + '/'
+		check_images_dir(path)
+		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_value, iteration, nb_members, display = False, save = False):
+def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = False):
 	plt.figure()
 	plt.plot(np.arange(250, 300, 1), np.arange(250, 300, 1), color = 'Red', linewidth = 2)
 	plt.scatter(y_pred_avg, y, color = 'Black')
@@ -155,12 +166,16 @@ def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_va
 		print('Mean error on the ' + str(len(y)) + ' best target values : ' + str(np.mean(np.absolute(y_pred_avg - y))))
 
 	if save:
-		check_images_dir('plot_comparison_best_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/')
-		plt.savefig('images/plot_comparison_best_target_bs' + str(batch_size) + '_m' + str(nb_members) + '/iteration_' + str(iteration + 1) + '.png', dpi=300)
+		path = './images/plot_comparison_best_target_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		path += 'bs' + str(batch_size) + '_m' + str(nb_members) + '/'
+		check_images_dir(path)
+		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, display = False, save = False):
+def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, display = False, save = False):
 	plt.figure()
 	plt.plot(range(len(qualities)), qualities)
 	plt.ylim(0.90, 1.01)
@@ -172,11 +187,14 @@ def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, di
 		plt.show()
 
 	if save:
-		plt.savefig('images/plot_quality_bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
+		path = './images/plot_quality_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, display = False, save = False):
+def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = False, save = False):
 	plt.figure()
 	plt.plot(range(len(accuracies)), accuracies)
 	plt.xlabel('Iteration')
@@ -187,6 +205,9 @@ def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_mem
 		plt.show()
 
 	if save:
-		plt.savefig('images/plot_top_n_accuracy_bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
+		path = './images/plot_top_n_accuracy_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
