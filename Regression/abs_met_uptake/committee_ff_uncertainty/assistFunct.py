@@ -104,13 +104,13 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 		path = './images/plot_values_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		path += 'bs' + str(batch_size) + '_m' + str(len(member_sets)) + '/'
+		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(len(member_sets)) + '/'
 		check_images_dir(path)
 		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
 	plt.close()
 
-def plot_r2(member_sets, idx, batch_size, reg_stra, lines = 4, columns = 4, display = False, save = False):
+def plot_r2(member_sets, idx, batch_size, batch_size_highest_value, reg_stra, lines, columns, display = False, save = False):
 	fix, axs = plt.subplots(lines, columns)
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
@@ -129,7 +129,7 @@ def plot_r2(member_sets, idx, batch_size, reg_stra, lines = 4, columns = 4, disp
 		path = 'images/plot_r2_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(len(member_sets)) + '.png', dpi=300)
+		plt.savefig(path + 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(len(member_sets)) + '.png', dpi=300)
 
 	plt.close()
 
@@ -146,7 +146,7 @@ def plot_highest_target(y_sorted, y_pred_avg, best_query, batch_size, batch_size
 		path = './images/plot_highest_target_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		path += 'bs' + str(batch_size) + '_m' + str(nb_members) + '/'
+		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '/'
 		check_images_dir(path)
 		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
@@ -169,7 +169,7 @@ def plot_comparison_best_target(y_pred_avg, y, batch_size, batch_size_highest_va
 		path = './images/plot_comparison_best_target_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		path += 'bs' + str(batch_size) + '_m' + str(nb_members) + '/'
+		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '/'
 		check_images_dir(path)
 		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
 
@@ -190,7 +190,7 @@ def plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, re
 		path = './images/plot_quality_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
+		plt.savefig(path + 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
 
@@ -208,6 +208,64 @@ def plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_mem
 		path = './images/plot_top_n_accuracy_'
 		for stra in reg_stra:
 			path += (stra + '_')
-		plt.savefig(path + 'bs' + str(batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
+		plt.savefig(path + 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
 
 	plt.close()
+
+def plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = False):
+	mean_uncertainty = []
+
+	for idx in range(len(member_sets[0][6])):
+		somme = 0
+		for idx_model in range(nb_members):
+			somme += member_sets[idx_model][6][idx]
+		mean_uncertainty.append(somme / nb_members)
+
+	plt.figure()
+	plt.scatter(range(len(mean_uncertainty)), mean_uncertainty)
+	thresh = [threshold for i in range(len(mean_uncertainty))]
+	plt.plot(range(len(mean_uncertainty)), thresh, color = 'Red')
+	plt.ylabel('Mean uncertainty')
+	if iteration == 0:
+		plt.title('Mean uncertainty\nbatch_size : ' + str(batch_size) + ' - batch_size_highest_value : ' + str(batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
+
+	if display:
+		plt.show()
+
+	if save:
+		path = './images/plot_mean_min_uncertainty_pred_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '/'
+		check_images_dir(path)
+		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
+
+	plt.close()
+
+def plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines, columns, display = False, save = False):
+	fix, axs = plt.subplots(lines, columns)
+	l, c = 0, 0
+	thresh = [threshold for i in range(len(member_sets[0][6]))]
+	for idx_model in range(lines * columns):
+		axs[l, c].scatter(range(len(member_sets[idx_model][6])), member_sets[idx_model][6])
+		axs[l, c].plot(range(len(thresh)), thresh, color = 'Red')
+		axs[l, c].set_title('Model (' + member_sets[idx_model][5] + ') ' + str(idx_model))
+		if l == lines - 1:
+			l = 0
+			c += 1
+		else:
+			l += 1
+
+	if display:
+		plt.show()
+
+	if save:
+		path = './images/plot_min_uncertainty_pred_'
+		for stra in reg_stra:
+			path += (stra + '_')
+		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '/'
+		check_images_dir(path)
+		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
+
+
+

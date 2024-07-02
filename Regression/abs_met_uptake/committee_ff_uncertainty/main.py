@@ -37,13 +37,13 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
-reg_stra = ['XGB', 'randomForest', 'SVR']
+reg_stra = ['XGB', 'randomForest']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 100
 batch_size = 1
 batch_size_highest_value = 0
-# threshold = 1e-3
+threshold = 1e-3
 
 # Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
 used_to_train = [False for i in range(len(y_argsorted))]
@@ -57,12 +57,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_m
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
 	for idx_model in range(nb_members // len(reg_stra)):
 		X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
-		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[idx_reg_stra]]) # 0, [] = Placeholder for y_pred and r2_scores
+		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[idx_reg_stra], []]) # 0, [] = Placeholder for y_pred and r2_scores
 		X_train, y_train = delete_data(X_train, y_train, idx_init)
 if (nb_members % len(reg_stra)) != 0:
 	for idx_model in range(nb_members % len(reg_stra)):
 		X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
-		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[0]]) # 0, [] = Placeholder for y_pred and r2_scores
+		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[0]], []) # 0, [] = Placeholder for y_pred and r2_scores
 		X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 # Optional : pyprind progBar
@@ -83,7 +83,7 @@ for iteration in range(nb_iterations):
 		# Vote
 		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], member_sets[idx_model][5], 1, batch_size, display = False)
 		votes.append(query)
-		member_sets[idx_model][2] = y_pred
+		member_sets[idx_model][2], member_sets[idx_model][6] = y_pred, uncertainty_pred
 		member_sets[idx_model][3].append(r2_score_y)
 
 		# r2_score on train only
@@ -151,6 +151,10 @@ for iteration in range(nb_iterations):
 	# Plot values
 	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, lines = 4, columns = 4, display = False, save = True)
 
+	# Plot min uncertainty
+	plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines = 2, columns = 5, display = False, save = True)
+	plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = True)
+
 	# Optional : pyprind progBar
 	#pbar.update()
 
@@ -161,7 +165,7 @@ plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members
 plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, display = False, save = True)
 
 # r2
-plot_r2(member_sets, 3, batch_size, reg_stra, lines = 2, columns = 5, display = False, save = True)
+plot_r2(member_sets, 3, batch_size, batch_size_highest_value, reg_stra, lines = 2, columns = 5, display = False, save = True)
 # plot_r2(member_sets, 4, display = False, save = False)
 
 
