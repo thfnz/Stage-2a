@@ -37,16 +37,14 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
-reg_stra = ['XGB', 'randomForest']
+reg_stra = ['XGB']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 100
 batch_size = 1
 batch_size_highest_value = 0
-threshold = 1e-3
-
-# Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
-used_to_train = [False for i in range(len(y_argsorted))]
+batch_size_min_uncertainty = 1
+threshold = 1e-2
 
 # Random training sets
 nb_members = 10
@@ -75,16 +73,19 @@ member_uncertainty_pred_n_m_one = [0 for i in range(nb_members)]
 
 for iteration in range(nb_iterations):
 	votes = []
+	selfLabels = []
 	# Calls for a vote on each model
 	for idx_model in range(nb_members):
 		# Extract datasets from member_sets (note : Overwrite X_train and y_train isn't a issue because they have been already depleted from the "Random training sets" process)
 		X_train, y_train = member_sets[idx_model][0], member_sets[idx_model][1]
 
 		# Vote
-		y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], member_sets[idx_model][5], 1, batch_size, display = False)
+		y_pred, query, r2_score_y, uncertainty_pred, selfLabel = uncertainty_sampling(X_train, y_train, X_test, y_test[:, 0], X, y[:, 0], threshold, member_sets[idx_model][5], 1, batch_size, batch_size_min_uncertainty, display = False)
 		votes.append(query)
 		member_sets[idx_model][2], member_sets[idx_model][6] = y_pred, uncertainty_pred
 		member_sets[idx_model][3].append(r2_score_y)
+
+		selfLabels.append(selfLabel)
 
 		# r2_score on train only
 		# if iteration > 0:
@@ -144,9 +145,32 @@ for iteration in range(nb_iterations):
 	qualities.append(query_sorted / len(y))
 
 	# New datasets
+	# Oracle labeling
 	for idx_model in range(nb_members):
-		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query)
+		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query, [], oracle = True)
 	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
+
+	idxs_selfLabel = []
+	values_selfLabel = []
+
+	# Self labeling
+	for selfLabelModel in selfLabels: # Unpacking (once again, bad practice !), worst code ever written
+		for selfLabel in selfLabelModel: # selfLabel = [idx, value]
+			# Avoid repetition
+			alreadyQueried = False
+			cpt = 0
+			while not alreadyQueried and cpt < len(idxs_selfLabel):
+				if selfLabel[0] == idxs_selfLabel[cpt]:
+					alreadyQueried = True
+				cpt += 1
+			if not alreadyQueried:
+				idxs_selfLabel.append(selfLabel[0])
+				values_selfLabel.append(selfLabel[1])
+
+	if len(idxs_selfLabel) > 0:
+		for member in member_sets:
+			member[0], member[1] = new_datasets(member[0], member[1], X_test, [], idxs_selfLabel, values_selfLabel, oracle = False)
+		X_test, y_test = delete_data(X_test, y_test, np.array(idxs_selfLabel))
 
 	# Plot values
 	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, lines = 4, columns = 4, display = False, save = True)
@@ -156,10 +180,10 @@ for iteration in range(nb_iterations):
 	plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = True)
 
 	# Optional : pyprind progBar
-	#pbar.update()
+	# pbar.update()
 
 # Accuracies
-plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = True, save = True)
+plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = False, save = True)
 
 # Quality 
 plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, display = False, save = True)

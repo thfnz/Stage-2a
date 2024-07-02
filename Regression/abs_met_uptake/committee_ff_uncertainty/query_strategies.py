@@ -28,17 +28,35 @@ def query_target_max_value(X_train, y_train, X_test, reg_stra, alpha, batch_size
 
 # Uncertainty
 
-def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, reg_stra, alpha, batch_size, display = False):
+def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, threshold, reg_stra, alpha, batch_size, batch_size_min_uncertainty, display = False):
 	# Predictions
 	y_pred, uncertainty_train, r2_score = predictor(X_train, y_train, X_test, X, y, reg_stra, alpha, display = display)
 	uncertainty_pred = uncertainty_predictor(X_train, uncertainty_train, X_test, reg_stra, alpha, display = display)
+	uncertainty_pred_argsorted = np.argsort(uncertainty_pred)
 
 	# Extract worst uncertainties
-	query_max_uncertainty_idx = np.argsort(uncertainty_pred)[-batch_size:] # Low confidence
+	query_max_uncertainty_idx = uncertainty_pred_argsorted[-batch_size:] # Low confidence
 	query_max_uncertainty_value = uncertainty_pred[query_max_uncertainty_idx]
 	query = [[query_max_uncertainty_idx[i], query_max_uncertainty_value[i]] for i in range(batch_size)]
 
-	return y_pred, query, r2_score, uncertainty_pred
+	# Extract best uncertainties and their predicted values
+	selfLabel = []
+	min_uncertainty_idx = uncertainty_pred_argsorted[:batch_size_min_uncertainty]
+	for idx in min_uncertainty_idx:
+		if uncertainty_pred[idx] < threshold:
+			print('yeeey, self labeling')
+			# Absolute idx (still a bad practice :c)
+			idx_abs = 0
+			found = False
+			while not found and idx_abs < len(y_pred):
+				if X_test[idx, :].any() == X[idx_abs, :].any():
+					found = True
+					# Labeling
+					selfLabel.append([idx, y_pred[idx_abs]])
+				else:
+					idx_abs += 1
+
+	return y_pred, query, r2_score, uncertainty_pred, selfLabel
 
 def predictor(X_train, y_train, X_test, X, y, reg_stra, alpha, display = False):
 	# Fit the chosen model and returns predicted targets (of every instances of the dataset) + the uncertainty train data
