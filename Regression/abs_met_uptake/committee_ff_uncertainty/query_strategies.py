@@ -8,7 +8,6 @@ from assistFunct import *
 # Lf max value
 
 def query_target_max_value(X_train, y_train, X_test, reg_stra, alpha, batch_size, display = False):
-	### Useless for now, TODO : compare w/ and w/out
 	# Trains the reg_stra model on a 1D-feature, tries to predict the target value on the test dataset and query what it thinks are the batch_size instances resulting in the max y
 	start_time = time.time()
 
@@ -40,11 +39,12 @@ def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, threshold, reg_
 	query = [[query_max_uncertainty_idx[i], query_max_uncertainty_value[i]] for i in range(batch_size)]
 
 	# Extract best uncertainties and their predicted values
+	if batch_size_min_uncertainty == -1:
+		batch_size_min_uncertainty = len(uncertainty_pred) # Very unoptimized !
 	selfLabel = []
 	min_uncertainty_idx = uncertainty_pred_argsorted[:batch_size_min_uncertainty]
 	for idx in min_uncertainty_idx:
 		if uncertainty_pred[idx] < threshold:
-			print('yeeey, self labeling')
 			# Absolute idx (still a bad practice :c)
 			idx_abs = 0
 			found = False
