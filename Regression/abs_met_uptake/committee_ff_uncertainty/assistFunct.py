@@ -113,7 +113,7 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 
 	plt.close()
 
-def plot_r2(member_sets, idx, batch_size, batch_size_highest_value, reg_stra, lines, columns, threshold, display = False, save = False):
+def plot_r2(member_sets, idx, batch_size, batch_size_highest_value, reg_stra, threshold, lines, columns, display = False, save = False):
 	fix, axs = plt.subplots(lines, columns, figsize = (15, 12))
 	l, c = 0, 0
 	for idx_model in range(lines * columns):
