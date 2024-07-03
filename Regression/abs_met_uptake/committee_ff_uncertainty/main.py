@@ -42,6 +42,7 @@ reg_stra = ['XGB']
 nb_iterations = 100
 batch_size = 1
 batch_size_highest_value = 0
+batch_size_min_uncertainty = 1
 threshold = 1e-3
 
 # Random training sets
@@ -109,6 +110,30 @@ for iteration in range(nb_iterations):
 		y_pred_avg.append(somme / nb_members)
 	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = False)
 
+	# selfLabelingMean
+	mean_uncertainty_pred = []
+	for idx_uncertainty_pred in range(len(uncertainty_pred)):
+		somme = 0
+		for idx_model in range(nb_members):
+			somme += member_sets[idx_model][6][idx_uncertainty_pred]
+		mean_uncertainty_pred.append(somme / nb_members)
+	idx_min_mean_uncertainty_pred = np.argsort(np.array(mean_uncertainty_pred))[:batch_size_min_uncertainty]
+	idx_valid_min_mean_uncertainty_pred = []
+	idx_abs_valid_min_mean_uncertainty_pred = []
+
+	for idx in idx_min_mean_uncertainty_pred:
+		if mean_uncertainty_pred[idx] < threshold:
+			# Absolute idx, still still still a bad practice 
+			idx_abs = 0
+			found = False
+			while not found and idx_abs < len(y_pred_avg):
+				if X_test[idx, :].any() == X[idx_abs, :].any():
+					found = True
+					idx_valid_min_mean_uncertainty_pred.append(idx)
+					idx_abs_valid_min_mean_uncertainty_pred.append(idx_abs)
+				else:
+					idx_abs += 1
+
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
 	for idx_model in range(nb_members):
@@ -140,9 +165,16 @@ for iteration in range(nb_iterations):
 	qualities.append(query_sorted / len(y))
 
 	# New datasets
+	# Oracle labeling
 	for idx_model in range(nb_members):
-		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query)
+		member_sets[idx_model][0], member_sets[idx_model][1] = new_datasets(member_sets[idx_model][0], member_sets[idx_model][1], X_test, y_test[:, 0], final_query, [], oracle = True)
 	X_test, y_test = delete_data(X_test, y_test, np.array(final_query))
+	
+	# Self labeling
+	if len(idx_valid_min_mean_uncertainty_pred) > 0:
+		for member in member_sets:
+			member[0], member[1] = new_datasets(member[0], member[1], X_test, [], idx_valid_min_mean_uncertainty_pred, y_pred_avg[idx_abs_valid_min_mean_uncertainty_pred], oracle = False)
+		X_test, y_test = delete_data(X_test, y_test, np.array(idx_valid_min_mean_uncertainty_pred))
 
 	# Plot values
 	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, lines = 4, columns = 4, display = False, save = False)
