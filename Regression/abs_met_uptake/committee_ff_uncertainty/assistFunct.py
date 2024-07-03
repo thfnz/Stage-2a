@@ -19,10 +19,13 @@ def ask_oracle(y_test, query):
 	# Simulates the request to the oracle
 	return y_test[query]
 
-def new_datasets(X_train, y_train, X_test, y_test, query):
+def new_datasets(X_train, y_train, X_test, y_test, query, ans, oracle):
 	## TODO implement threshold
 	# Labeling
-	answer = ask_oracle(y_test, query)
+	if oracle:
+		answer = ask_oracle(y_test, query)
+	else:
+		answer = ans
 
 	# New dataset
 	X_train = np.concatenate((X_train, X_test[query]), axis = 0) # In this case, axis = 0 is useless because dim(X) = 1
@@ -266,6 +269,5 @@ def plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_hig
 		path += 'bs' + str(batch_size) + '_bshv' + str(batch_size_highest_value) + '_m' + str(nb_members) + '/'
 		check_images_dir(path)
 		plt.savefig(path + 'iteration_' + str(iteration + 1) + '.png', dpi=300)
-
 
 

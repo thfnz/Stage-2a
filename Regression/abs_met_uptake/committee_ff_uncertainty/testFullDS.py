@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 
-from assistFunct import *
 from regressors import regression_strategy
 
 # Loading dataset
@@ -22,35 +21,30 @@ reg_stra = ['XGB']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2)
 
-# Models
-nb_members = 10
+# Models (Useless until different models give better results)
+nb_members = 1
 members_sets = []
 
 for idx_model in range(nb_members):
-	members_sets.append(reg_stra[0]) # Dirty way, need to change if different models are giving better results
+	members_sets.append([reg_stra[0]]) # Dirty way, need to change if different models are giving better results
 
 # Training and predicting
 for idx_model in range(nb_members):
-	model = regression_strategy(members_sets[idx_model][0])
+	model = regression_strategy(members_sets[idx_model][0], 1)
 	model.fit(X_train, y_train)
 	y_pred = model.predict(X_test)
-	members_sets.append(y_pred)
-	members_sets.append(r2_score(y_test, y_pred))
+	members_sets[idx_model].append(y_pred)
+	print('R2 score (model ' + str(idx_model + 1) + ') : ' + str(r2_score(y_test, y_pred)))
 
+# Useless until different models give better results
+"""
 # y_pred_avg
 y_pred_avg = []
-for i in range(len(X_test[:, 0]))
+for i in range(len(X_test[:, 0])):
 	somme = 0
 	for idx_model in range(nb_members):
 		somme += members_sets[idx_model][1]
 	y_pred_avg.append(somme / nb_members)
 
-# plot_r2_avg
-r2_avg = r2_score(y_test, y_pred_avg)
-plt.figure()
-plt.plot(range(len(r2_avg)), r2_avg)
-plt.ylabel(r2_avg)
-plt.show()
-
-# plot_r2
-plot_r2(members_sets, 2, 0, 0, reg_stra, lines = 2, columns = 5, display = True, save = False)
+r2_avg = r2_score(y_test, np.array(y_pred_avg))
+plot_r2_avg(y_test, y_pred_avg, r2_avg, display = False, save = True)"""
