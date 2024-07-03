@@ -44,9 +44,6 @@ batch_size = 1
 batch_size_highest_value = 0
 threshold = 1e-3
 
-# Bool representation of if the data is labeled (used in X_train = True) or not (used in X_test = False)
-used_to_train = [False for i in range(len(y_argsorted))]
-
 # Random training sets
 nb_members = 10
 member_sets = [] # Training datasets for each member of the committee
@@ -155,7 +152,7 @@ for iteration in range(nb_iterations):
 	plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = True)
 
 	# Optional : pyprind progBar
-	#pbar.update()
+	# pbar.update()
 
 # Accuracies
 plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = True, save = True)

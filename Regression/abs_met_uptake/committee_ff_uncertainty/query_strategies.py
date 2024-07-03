@@ -8,7 +8,6 @@ from assistFunct import *
 # Lf max value
 
 def query_target_max_value(X_train, y_train, X_test, reg_stra, alpha, batch_size, display = False):
-	### Useless for now, TODO : compare w/ and w/out
 	# Trains the reg_stra model on a 1D-feature, tries to predict the target value on the test dataset and query what it thinks are the batch_size instances resulting in the max y
 	start_time = time.time()
 
