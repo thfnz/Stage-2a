@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import pyprind
 import sys
 import warnings
@@ -37,7 +36,7 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
-reg_stra = ['XGB', 'randomForest']
+reg_stra = ['XGB']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
 nb_iterations = 100
