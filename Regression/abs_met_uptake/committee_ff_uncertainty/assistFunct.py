@@ -19,13 +19,10 @@ def ask_oracle(y_test, query):
 	# Simulates the request to the oracle
 	return y_test[query]
 
-def new_datasets(X_train, y_train, X_test, y_test, query, ans, oracle):
+def new_datasets(X_train, y_train, X_test, y_test, query):
 	## TODO implement threshold
 	# Labeling
-	if oracle:
-		answer = ask_oracle(y_test, query)
-	else:
-		answer = ans
+	answer = ask_oracle(y_test, query)
 
 	# New dataset
 	X_train = np.concatenate((X_train, X_test[query]), axis = 0) # In this case, axis = 0 is useless because dim(X) = 1

@@ -155,7 +155,7 @@ for iteration in range(nb_iterations):
 	# pbar.update()
 
 # Accuracies
-plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = True, save = True)
+plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members, n_top, reg_stra, display = False, save = True)
 
 # Quality 
 plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, display = False, save = True)
