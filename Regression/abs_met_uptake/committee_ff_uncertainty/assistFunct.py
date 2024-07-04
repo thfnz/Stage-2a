@@ -85,9 +85,9 @@ def plot_values(member_sets, X_test, y_test, X, y_pred_avg, feature_columns, n_i
 	X_train, y_train = member_sets[0][0], member_sets[0][1]
 	for idx_feature in range(lines * columns):
 		# axs[l, c].scatter(X[:, idx_feature], y_pred, color = 'Green', label = 'Predicted data', s = 8)
-		axs[l, c].scatter(X_test[:, idx_feature], y_test, color = 'Black', label = 'Test data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_test[:, idx_feature], y_test, color = 'Blue', label = 'Test data', alpha = 0.5, s = 1)
 		#print(n_init, (batch_size + batch_size_highest_value))
-		axs[l, c].scatter(X_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1), idx_feature], y_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1)], color = 'Blue', label = 'Train data', alpha = 0.5, s = 1)
+		axs[l, c].scatter(X_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1), idx_feature], y_train[n_init : len(X_train[:, 0]) - (batch_size + batch_size_highest_value - 1)], color = 'Black', label = 'Train data', alpha = 0.5, s = 1)
 		axs[l, c].scatter(X_train[-(batch_size + batch_size_highest_value) : len(X_train[:, 0]) - batch_size_highest_value, idx_feature], y_train[-(batch_size + batch_size_highest_value) : len(X_train[:, 0]) - batch_size_highest_value], color = 'Red', label = 'Last train data added (uncertainty)', s = 4)
 		# axs[l, c].scatter(X_train[-batch_size_highest_value:, idx_feature], y_train[-batch_size_highest_value:], color = 'Green', label = 'Last train data added (highest pred value)', s = 4)
 		axs[l, c].scatter(X[np.argsort(y_pred_avg)[-1], idx_feature], y_pred_avg[-1], color = 'm', label = 'Highest predicted value', s = 8)
