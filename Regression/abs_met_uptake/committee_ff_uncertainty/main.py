@@ -36,19 +36,19 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
-reg_stra = ['XGB']
+reg_stra = ['XGB', 'randomForest']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 100
+nb_iterations = 130
 batch_size = 1
 batch_size_highest_value = 0
-batch_size_min_uncertainty = 1
+batch_size_min_uncertainty = -1
 threshold = 1e-3
 
 # Random training sets
-nb_members = 10
+nb_members = 2
 member_sets = [] # Training datasets for each member of the committee
-n_init = 5
+n_init = 10
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -117,6 +117,8 @@ for iteration in range(nb_iterations):
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][6][idx_uncertainty_pred]
 		mean_uncertainty_pred.append(somme / nb_members)
+	if batch_size_min_uncertainty == -1:
+		batch_size_min_uncertainty = len(mean_uncertainty_pred)
 	idx_min_mean_uncertainty_pred = np.argsort(np.array(mean_uncertainty_pred))[:batch_size_min_uncertainty]
 	idx_valid_min_mean_uncertainty_pred = []
 	idx_abs_valid_min_mean_uncertainty_pred = []
@@ -180,7 +182,7 @@ for iteration in range(nb_iterations):
 	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, threshold, lines = 4, columns = 4, display = False, save = False)
 
 	# Plot min uncertainty
-	plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines = 2, columns = 5, display = False, save = False)
+	# plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines = 2, columns = 5, display = False, save = False)
 	plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = True)
 
 	# Optional : pyprind progBar
@@ -193,7 +195,7 @@ plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members
 plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, threshold, display = False, save = False)
 
 # r2
-plot_r2(member_sets, 3, batch_size, batch_size_highest_value, reg_stra, threshold, lines = 2, columns = 5, display = False, save = True)
+plot_r2(member_sets, 3, batch_size, batch_size_highest_value, reg_stra, threshold, lines = 1, columns = 2, display = False, save = True)
 # plot_r2(member_sets, 4, display = False, save = False)
 
 
