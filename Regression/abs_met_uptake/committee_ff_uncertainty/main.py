@@ -36,19 +36,19 @@ for idx in y_argsorted:
 	i += 1
 
 # Model selection (randomForest - elasticNet - elasticNetCV - XGB - SVR)
-reg_stra = ['XGB']
+reg_stra = ['XGB', 'randomForest']
 
 # AL (randomForest : iter = 10, batch_size = 10, n_init = 50 - elasticNet)
-nb_iterations = 50
+nb_iterations = 130
 batch_size = 1
-batch_size_highest_value = 1
-batch_size_min_uncertainty = 1
+batch_size_highest_value = 0
+batch_size_min_uncertainty = -1
 threshold = 1e-3
 
 # Random training sets
-nb_members = 10
+nb_members = 2
 member_sets = [] # Training datasets for each member of the committee
-n_init = 5
+n_init = 10
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / 69840)) # TODO : remove flat number
 
 for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
@@ -59,7 +59,7 @@ for idx_reg_stra in range(len(reg_stra)): # Model repartition. If nb_members doe
 if (nb_members % len(reg_stra)) != 0:
 	for idx_model in range(nb_members % len(reg_stra)):
 		X_train_feature, y_train_feature, idx_init = random_training_set(X_train, y_train[:, 0], n_init)
-		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[0]], []) # 0, [] = Placeholder for y_pred and r2_scores
+		member_sets.append([X_train_feature, y_train_feature, 0, [], [], reg_stra[0], []]) # 0, [] = Placeholder for y_pred and r2_scores
 		X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 # Optional : pyprind progBar
@@ -111,7 +111,7 @@ for iteration in range(nb_iterations):
 		for idx_model in range(nb_members):
 			somme += member_sets[idx_model][2][i]
 		y_pred_avg.append(somme / nb_members)
-	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, threshold, display = False, save = False)
+	plot_comparison_best_target(np.array(y_pred_avg)[np.argsort(y_pred_avg)[-n_top:]], y_sorted[-n_top:, 0], batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, threshold, display = False, save = True)
 
 	# Evaluation of the model (Search for the highest target value)
 	votes = []
@@ -138,7 +138,7 @@ for iteration in range(nb_iterations):
 	print('Top ' + str(n_top) + ' accuracy (iteration ' + str(iteration + 1) + ') : ' + str((in_top / n_top) * 100) + '%')
 
 	# Plot highest target
-	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, threshold, display = False, save = False)
+	plot_highest_target(y_sorted[:, 0], y_pred_avg, query_sorted, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, threshold, display = False, save = True)
 
 	# Quality
 	qualities.append(query_sorted / len(y))
@@ -172,10 +172,10 @@ for iteration in range(nb_iterations):
 		X_test, y_test = delete_data(X_test, y_test, np.array(idxs_selfLabel))
 
 	# Plot values
-	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, threshold, lines = 4, columns = 4, display = False, save = False)
+	plot_values(member_sets, X_test, y_test[:, 0], X, y_pred_avg, feature_columns, n_init, batch_size, batch_size_highest_value, iteration, reg_stra, threshold, lines = 4, columns = 4, display = False, save = True)
 
 	# Plot min uncertainty
-	plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines = 2, columns = 5, display = False, save = False)
+	plot_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, lines = 1, columns = 2, display = False, save = True)
 	plot_mean_min_uncertainty_pred(member_sets, threshold, batch_size, batch_size_highest_value, iteration, nb_members, reg_stra, display = False, save = False)
 
 	# Optional : pyprind progBar
@@ -188,7 +188,7 @@ plot_top_n_accuracy(accuracies, batch_size, batch_size_highest_value, nb_members
 plot_quality(qualities, batch_size, batch_size_highest_value, nb_members, reg_stra, threshold, display = False, save = False)
 
 # r2
-plot_r2(member_sets, 3, batch_size, batch_size_highest_value, reg_stra, threshold, lines = 2, columns = 5, display = False, save = True)
+plot_r2(member_sets, 3, batch_size, batch_size_highest_value, reg_stra, threshold, lines = 1, columns = 2, display = False, save = True)
 # plot_r2(member_sets, 4, display = False, save = False)
 
 
