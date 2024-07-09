@@ -91,7 +91,7 @@ class oracleOnly:
 		self.batch_size = batch_size
 		self.batch_size_highest_value = batch_size_highest_value
 		self.n_top = n_top
-		self.class_set = [] # [[n_top_accuracy], ..., ]
+		self.class_set = [[]] # [[n_top_accuracy]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -124,29 +124,34 @@ class oracleOnly:
 			raise Exception('member_sets not initialized')
 		nb_members = len(self.member_sets)
 
+		if self.batch_size < 1 and self.batch_size_highest_value < 1:
+			raise Exception('At least one batch_size must be > 1')
+
 		# Uncertainty sampling
-		votes = []
-		for idx_model in range(nb_members):
-			X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
+		if self.batch_size > 0:
+			votes = []
+			for idx_model in range(nb_members):
+				X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
 
-			# Vote
-			y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.member_sets[idx_model][4], self.batch_size, display = display)
-			votes.append(query)
-			self.member_sets[idx_model][2], self.member_sets[idx_model][5] = y_pred, uncertainty_pred
-			self.member_sets[idx_model][3].append(r2_score_y)
+				# Vote
+				y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.member_sets[idx_model][4], self.batch_size, display = display)
+				votes.append(query)
+				self.member_sets[idx_model][2], self.member_sets[idx_model][5] = y_pred, uncertainty_pred
+				self.member_sets[idx_model][3].append(r2_score_y)
 
-		# Vote count
-		final_query = vote_count(votes, self.batch_size)
+			# Vote count
+			final_query = vote_count(votes, self.batch_size)
 
 		# Max value sampling
-		votes = []
-		for idx_model in range(nb_members):
-			X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
-			query = query_target_max_value(X_train, y_train, self.X_test, self.member_sets[idx_model][4], self.batch_size_highest_value, display = display)
-			votes.append(query)
+		if self.batch_size_highest_value > 0:
+			votes = []
+			for idx_model in range(nb_members):
+				X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
+				query = query_target_max_value(X_train, y_train, self.X_test, self.member_sets[idx_model][4], self.batch_size_highest_value, display = display)
+				votes.append(query)
 
-		for candidate in vote_count(votes, self.batch_size_highest_value):
-			final_query.append(candidate)
+			for candidate in vote_count(votes, self.batch_size_highest_value):
+				final_query.append(candidate)
 
 		# n_top accuracy
 		votes = []
@@ -172,7 +177,7 @@ class oracleOnly:
 					idx += 1
 
 		n_top_accuracy = (in_top / self.n_top) * 100
-		self.class_set.append(n_top_accuracy) # Need to be changed if plot
+		self.class_set[0].append(n_top_accuracy) # Need to be changed if plot
 
 		if display:
 			print('(oracleOnly) Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')

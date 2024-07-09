@@ -1,6 +1,7 @@
 import pandas as pd
 
 from oracleOnly import oracleOnly
+from selfLabelingInde import selfLabelingInde
 from baseline import randomQuery
 
 from plotResults import plotResults
@@ -21,7 +22,7 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 reg_stra = ['XGB', 'randomForest']
 
 # AL
-nb_iterations = 130
+nb_iterations = 5
 batch_size = 1
 batch_size_highest_value = 0
 nb_members = 2
@@ -30,4 +31,4 @@ n_init = 10
 alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value)
 comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init)
-comp.comparison_top_n_accuracy(10, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, display = False, save = True, pbar = True)
+comp.comparison_top_n_accuracy(10, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, display_plot_r2 = False, save_plot_r2 = True, display = False, save = True, pbar = True)

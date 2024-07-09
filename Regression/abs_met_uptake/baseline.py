@@ -22,7 +22,7 @@ class randomQuery:
 		self.batch_size = batch_size
 		self.batch_size_highest_value = -1
 		self.n_top = n_top
-		self.class_set = [] # [[n_top_accuracy], ..., ]
+		self.class_set = [[]] # [[n_top_accuracy]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -54,12 +54,17 @@ class randomQuery:
 			raise Exception('member_sets not initialized')
 		nb_members = len(self.member_sets)
 
+		if self.batch_size < 1 and self.batch_size_highest_value < 1:
+			raise Exception('batch_size must be > 1')
+
 		# Training and prediction
 		for idx_model in range(nb_members):
 			X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
 			model = regression_strategy(self.member_sets[idx_model][4])
 			model.fit(X_train, y_train)
-			self.member_sets[idx_model][2] = model.predict(self.X)
+			y_pred = model.predict(self.X)
+			self.member_sets[idx_model][2] = y_pred
+			self.member_sets[idx_model][3].append(r2_score(self.y, y_pred))
 
 		# Sampling 
 		final_query = random_query(self.X_test, self.batch_size)
@@ -88,7 +93,7 @@ class randomQuery:
 					idx += 1
 
 		n_top_accuracy = (in_top / self.n_top) * 100
-		self.class_set.append(n_top_accuracy) # Need to be changed if plot
+		self.class_set[0].append(n_top_accuracy) # Need to be changed if plot
 
 		if display:
 			print('(randomQuery) Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')

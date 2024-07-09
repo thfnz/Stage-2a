@@ -17,10 +17,10 @@ def regression_strategy(reg_stra):
 			model = make_pipeline(PolynomialFeatures(degree = 4), StandardScaler(), ElasticNet(alpha = 1))
 
 		case 'elasticNetCV':
-			cv = RepeatedKFold(n_splits = 5, n_repeats = 1, random_state = None)
+			cv = RepeatedKFold(n_splits = 10, n_repeats = 1, random_state = None)
 			ratios = np.arange(1, 10, 1)
 			alphas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.0, 1.0, 10.0, 100.0]
-			model = make_pipeline(PolynomialFeatures(degree = polyDeg), StandardScaler(), ElasticNetCV(l1_ratio = ratios, alphas = alphas, cv = cv, n_jobs = -1))
+			model = make_pipeline(PolynomialFeatures(degree = 4), StandardScaler(), ElasticNetCV(l1_ratio = ratios, alphas = alphas, cv = cv, n_jobs = -1))
 
 		case 'XGB':
 			model = XGBRegressor(n_estimators = 800, max_depth = 5, eta = 0.02, subsample = 0.75, colsample_bytree = 0.3, reg_lambda = 0.6, reg_alpha = 0.15)

@@ -7,7 +7,7 @@ from plotResults import plotResults
 
 def plot_hist_n_top_acc(n_top_accs, reg_stra, name, display = False, save = False):
 	plt.figure()
-	plt.hist(n_top_accs, bins = 5)
+	plt.hist(n_top_accs)
 
 	if display:
 		plt.show()
@@ -32,7 +32,7 @@ class comparisonAlProcessBaseline:
 		self.nb_members = nb_members
 		self.n_init = n_init
 
-	def comparison_top_n_accuracy(self, nb_processes, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display = False, save = True, pbar = False):
+	def comparison_top_n_accuracy(self, nb_processes, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display = False, save = True, pbar = False):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
 
@@ -50,16 +50,22 @@ class comparisonAlProcessBaseline:
 			al.learn(display = display, pbar = pbar)
 			base.learn(display = display, pbar = pbar)
 
-			self.alProcess_n_top_accs.append(al.class_set[-1])
-			self.baseline_n_top_accs.append(base.class_set[-1])
+			self.alProcess_n_top_accs.append(al.class_set[0][-1])
+			self.baseline_n_top_accs.append(base.class_set[0][-1])
 
 			# plot_top_n_accuracy
-			if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
+			if display_plot_top_n_accuracy or save_plot_top_n_accuracy or display_plot_r2 or save_plot_r2:
 				plot_al = plotResults(al)
 				plot_base = plotResults(base)
 
-				plot_al.top_n_accuracy(name = 'alProcess_it' + str(idx_process), folder = 'top_n_accuracy/al', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-				plot_base.top_n_accuracy(name = 'base_it' + str(idx_process), folder = 'top_n_accuracy/base', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+				if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
+					plot_al.top_n_accuracy(name = 'alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_base.top_n_accuracy(name = 'base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+
+				if display_plot_r2 or save_plot_r2:
+					### TODO : allouer dynamiquement lignes et colonnes
+					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = 'r2/al/', display = display_plot_r2, save = save_plot_r2)
+					plot_al.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_base
@@ -71,3 +77,5 @@ class comparisonAlProcessBaseline:
 		# Plot
 		plot_hist_n_top_acc(self.alProcess_n_top_accs, self.reg_stra, 'alProcess_n_top_accs', display = display, save = save)
 		plot_hist_n_top_acc(self.baseline_n_top_accs, self.reg_stra, 'baseline_n_top_accs', display = display, save = save)
+
+
