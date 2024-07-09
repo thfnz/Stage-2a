@@ -105,10 +105,11 @@ def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 
 class selfLabelingInde:
 
-	def __init__(self, threshold, nb_iterations, batch_size = 1, batch_size_highest_value = 0, n_top = 100):
+	def __init__(self, threshold, nb_iterations, batch_size = 1, batch_size_highest_value = 0, batch_size_min_uncertainty = -1, n_top = 100):
 		self.nb_iterations = nb_iterations
 		self.batch_size = batch_size
 		self.batch_size_highest_value = batch_size_highest_value
+		self.batch_size_min_uncertainty = batch_size_min_uncertainty
 		self.threshold = threshold
 		self.n_top = n_top
 		self.class_set = [[]] # [[n_top_accuracy]]
@@ -154,7 +155,7 @@ class selfLabelingInde:
 				X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
 
 				# Vote
-				y_pred, query, r2_score_y, uncertainty_pred, selfLabel = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.threshold, self.member_sets[idx_model][4], self.batch_size, display = display)
+				y_pred, query, r2_score_y, uncertainty_pred, selfLabel = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.threshold, self.member_sets[idx_model][4], self.batch_size, self.batch_size_min_uncertainty, display = display)
 				votes.append(query)
 				selfLabels.append(selfLabel)
 				self.member_sets[idx_model][2], self.member_sets[idx_model][5] = y_pred, uncertainty_pred
@@ -232,23 +233,23 @@ class selfLabelingInde:
 
 		return self.member_sets[0][0][- (self.batch_size + self.batch_size_highest_value)], self.member_sets[0][1][- (self.batch_size + self.batch_size_highest_value)]
 
-		def learn(self, display = False, pbar = False):
-			try:
-				self.member_sets
-			except:
-				raise Exception('member_sets not initialized')
+	def learn(self, display = False, pbar = False):
+		try:
+			self.member_sets
+		except:
+			raise Exception('member_sets not initialized')
+
+		if pbar:
+			pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)
+
+		for iteration in range(self.nb_iterations):
+			self.learnOnce(display = display)
 
 			if pbar:
-				pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)
+				pbar.update()
 
-			for iteration in range(self.nb_iterations):
-				self.learnOnce(display = display)
-
-				if pbar:
-					pbar.update()
-
-		def initLearn(self, X, y, reg_stra, nb_members, n_init, display = False, pbar = False):
-			self.member_setsInit(X, y, reg_stra, nb_members, n_init, display = display)
-			self.learn(display = display, pbar = pbar)
+	def initLearn(self, X, y, reg_stra, nb_members, n_init, display = False, pbar = False):
+		self.member_setsInit(X, y, reg_stra, nb_members, n_init, display = display)
+		self.learn(display = display, pbar = pbar)
 
 

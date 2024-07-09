@@ -1,13 +1,15 @@
 import copy
 import gc
 import matplotlib.pyplot as plt
+import numpy as np
 
 from assistFunct import check_images_dir
 from plotResults import plotResults
 
-def plot_hist_n_top_acc(n_top_accs, reg_stra, name, display = False, save = False):
+def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save = False):
 	plt.figure()
 	plt.hist(n_top_accs)
+	plt.title('Histogram of the accuracy for the ' + str(n_top) + ' highest target values.\nμ = ' + str(np.mean(n_top_accs)) + ' - σ = ' + str(np.std(n_top_accs)))
 
 	if display:
 		plt.show()
@@ -36,16 +38,16 @@ class comparisonAlProcessBaseline:
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
 
-		# Same member_sets initialization
-		member_sets, X_test, y_test = self.alProcess.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
-		self.alProcess.member_sets, self.baseline.member_sets = member_sets, member_sets
-		self.baseline.X, self.baseline.y, self.baseline.reg_stra = self.X, self.y, self.reg_stra
-		self.baseline.X_test, self.baseline.y_test = X_test, y_test
-
 		# Retrieval of the last n_top accuracy after AL
 		for idx_process in range(nb_processes):
 			al = copy.deepcopy(self.alProcess)
 			base = copy.deepcopy(self.baseline)
+
+			# Same member_sets initialization
+			member_sets, X_test, y_test = al.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
+			al.member_sets, base.member_sets = member_sets, member_sets
+			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
+			base.X_test, base.y_test = X_test, y_test
 
 			al.learn(display = display, pbar = pbar)
 			base.learn(display = display, pbar = pbar)
@@ -75,7 +77,7 @@ class comparisonAlProcessBaseline:
 			gc.collect()
 
 		# Plot
-		plot_hist_n_top_acc(self.alProcess_n_top_accs, self.reg_stra, 'alProcess_n_top_accs', display = display, save = save)
-		plot_hist_n_top_acc(self.baseline_n_top_accs, self.reg_stra, 'baseline_n_top_accs', display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.alProcess_n_top_accs), self.reg_stra, self.alProcess.n_top, 'alProcess_n_top_accs', display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.baseline_n_top_accs), self.reg_stra, self.baseline.n_top, 'baseline_n_top_accs', display = display, save = save)
 
 
