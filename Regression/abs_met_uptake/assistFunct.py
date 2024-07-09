@@ -71,3 +71,8 @@ def vote_count(votes, batch_size):
 			final_query.append(candidate)
 
 	return final_query
+
+def check_images_dir(dir):
+	os.makedirs('./images', exist_ok = True)
+	if len(dir) > 0:
+		os.makedirs(dir, exist_ok = True)

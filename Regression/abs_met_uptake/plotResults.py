@@ -1,10 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 
-def check_images_dir(dir):
-	os.makedirs('./images', exist_ok = True)
-	if len(dir) > 0:
-		os.makedirs(dir, exist_ok = True)
+from assistFunct import check_images_dir
 
 class plotResults:
 
@@ -24,7 +21,7 @@ class plotResults:
 			plt.show()
 
 		if save:
-			check_images_dir()
+			check_images_dir('')
 			path = './images/plot_top_n_accuracy_'
 			for stra in self.alProcess.reg_stra:
 				path += (stra + '_')

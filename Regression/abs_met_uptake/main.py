@@ -1,7 +1,9 @@
 import pandas as pd
 
 from oracleOnly import oracleOnly
+from randomQuery import randomQuery
 from plotResults import plotResults
+from comparisonAlProcessBaseline import comparisonAlProcessBaseline
 
 # Loading dataset
 dataset = pd.read_csv('./properties.csv')
@@ -24,7 +26,7 @@ batch_size_highest_value = 0
 nb_members = 2
 n_init = 10
 
-test = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
-test.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
-plot = plotResults(test)
-plot.top_n_accuracy(display = True, save = True)
+alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
+baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value)
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init)
+comp.comparison_top_n_accuracy(10, display = False, save = True, pbar = True)
