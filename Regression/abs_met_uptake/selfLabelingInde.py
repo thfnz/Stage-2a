@@ -19,7 +19,7 @@ def query_target_max_value(X_train, y_train, X_test, reg_stra, batch_size, displ
 	model = regression_strategy(reg_stra)
 	model.fit(X_train, y_train)
 	if display:
-		print('\nModel (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained on ' + str(len(y_train)) + ' intances.')
+		print('Model (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained on ' + str(len(y_train)) + ' intances.')
 
 	# Prediction
 	y_pred = model.predict(X_test)
@@ -30,19 +30,39 @@ def query_target_max_value(X_train, y_train, X_test, reg_stra, batch_size, displ
 	return query
 
 # Uncertainty
-def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, reg_stra, batch_size, display = False):
+def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, threshold, reg_stra, batch_size, batch_size_min_uncertainty, display = False):
 	# Predictions
-	y_pred, uncertainty_train, r2_score = predictor(X_train, y_train, X, y, reg_stra, display = display)
+	y_pred, uncertainty_train, r2_score = predictor(X_train, y_train, X_test, X, y, reg_stra, display = display)
 	uncertainty_pred = uncertainty_predictor(X_train, uncertainty_train, X_test, reg_stra, display = display)
+	uncertainty_pred_argsorted = np.argsort(uncertainty_pred)
 
 	# Extract worst uncertainties
-	query_max_uncertainty_idx = np.argsort(uncertainty_pred)[-batch_size:] # Low confidence
+	query_max_uncertainty_idx = uncertainty_pred_argsorted[-batch_size:] # Low confidence
 	query_max_uncertainty_value = uncertainty_pred[query_max_uncertainty_idx]
 	query = [[query_max_uncertainty_idx[i], query_max_uncertainty_value[i]] for i in range(batch_size)]
 
-	return y_pred, query, r2_score, uncertainty_pred
+	# Extract best uncertainties and their predicted values
+	if batch_size_min_uncertainty == -1:
+		batch_size_min_uncertainty = len(uncertainty_pred)
 
-def predictor(X_train, y_train, X, y, reg_stra, display = False):
+	selfLabel = []
+	min_uncertainty_idx = uncertainty_pred_argsorted[:batch_size_min_uncertainty]
+	for idx in min_uncertainty_idx:
+		if uncertainty_pred[idx] < threshold:
+			# Absolute idx
+			idx_abs = 0
+			found = False
+			while not found and idx_abs < len(y_pred):
+				if X_test[idx, :].any() == X[idx_abs, :].any():
+					found = True
+					# Labeling
+					selfLabel.append([idx, y_pred[idx_abs]])
+				else:
+					idx_abs += 1
+
+	return y_pred, query, r2_score, uncertainty_pred, selfLabel
+
+def predictor(X_train, y_train, X_test, X, y, reg_stra, display = False):
 	# Fit the chosen model and returns predicted targets (of every instances of the dataset) + the uncertainty train data
 	start_time = time.time()
 
@@ -50,7 +70,7 @@ def predictor(X_train, y_train, X, y, reg_stra, display = False):
 	model = regression_strategy(reg_stra)
 	model.fit(X_train, y_train)
 	if display:
-		print('\nModel (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained with ' + str(len(y_train)) + ' intances.')
+		print('Model (' + reg_stra + ') took ' + str(time.time() - start_time) + 's to be trained with ' + str(len(y_train)) + ' intances.')
 
 	# Prediction on the entire data set
 	y_pred = model.predict(X)
@@ -75,7 +95,7 @@ def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 	model = regression_strategy(reg_stra)
 	model.fit(X_train, y_train)
 	if display:
-		print('\nModel (' + reg_stra + ') took ' + str(start_time - time.time()) + 's to be trained with ' + str(len(y_train)) + ' intances.')
+		print('Model (' + reg_stra + ') took ' + str(start_time - time.time()) + 's to be trained with ' + str(len(y_train)) + ' intances.')
 
 	uncertainty_predicted = np.absolute(model.predict(X_test)) # y_train = uncertainty_train, very clever technique !
 
@@ -83,15 +103,15 @@ def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 
 ### AL
 
-class oracleOnly:
-	# Simple query by committee w/o any labeling made by the models.
+class selfLabelingInde:
 
-	def __init__(self, nb_iterations, batch_size = 1, batch_size_highest_value = 0, n_top = 100):
+	def __init__(self, nb_iterations, batch_size = 1, batch_size_highest_value = 0, threshold, n_top = 100):
 		self.nb_iterations = nb_iterations
 		self.batch_size = batch_size
 		self.batch_size_highest_value = batch_size_highest_value
+		self.threshold = threshold
 		self.n_top = n_top
-		self.class_set = [] # [[n_top_accuracy], ..., ]
+		self.class_set = []
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -116,7 +136,6 @@ class oracleOnly:
 		return self.member_sets, self.X_test, self.y_test
 
 	def learnOnce(self, display = False):
-		# 1 AL iteration, return the added training data
 
 		try:
 			self.member_sets
@@ -126,12 +145,14 @@ class oracleOnly:
 
 		# Uncertainty sampling
 		votes = []
+		selfLabels = []
 		for idx_model in range(nb_members):
 			X_train, y_train = self.member_sets[idx_model][0], self.member_sets[idx_model][1]
 
 			# Vote
-			y_pred, query, r2_score_y, uncertainty_pred = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.member_sets[idx_model][4], self.batch_size, display = display)
+			y_pred, query, r2_score_y, uncertainty_pred, selfLabel = uncertainty_sampling(X_train, y_train, self.X_test, self.y_test, self.X, self.y, self.threshold, self.member_sets[idx_model][4], self.batch_size, display = display)
 			votes.append(query)
+			selfLabels.append(selfLabel)
 			self.member_sets[idx_model][2], self.member_sets[idx_model][5] = y_pred, uncertainty_pred
 			self.member_sets[idx_model][3].append(r2_score_y)
 
@@ -178,29 +199,51 @@ class oracleOnly:
 			print('(oracleOnly) Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
 
 		# New datasets
+		# Oracle labeling
 		for idx_model in range(nb_members):
 			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query, [], oracle = True)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
 
+		# Self labeling
+		idxs_selfLabel = []
+		values_selfLabel = []
+		for selfLabelModel in selfLabels: # Unpacking
+			for selfLabel in selfLabelModel: # selfLabel = [idx, predicted value]
+				# Avoid repetition
+				alreadyQueried = False
+				idx = 0
+				while not alreadyQueried and idx < len(idxs_selfLabel):
+					if selfLabel[0] == idxs_selfLabel[idx]:
+						alreadyQueried = True
+					idx += 1
+				if not alreadyQueried:
+					idxs_selfLabel.append(selfLabel[0])
+					values_selfLabel.append(selfLabel[1])
+
+		if len(idxs_selfLabel) > 0:
+			for member in self.member_sets:
+				member[0], member[1] = new_datasets(member[0], member[1], self.X_test, [], idxs_selfLabel, values_selfLabel, oracle = False)
+			self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(idxs_selfLabel))
+
 		return self.member_sets[0][0][- (self.batch_size + self.batch_size_highest_value)], self.member_sets[0][1][- (self.batch_size + self.batch_size_highest_value)]
 
-	def learn(self, display = False, pbar = False):
-		try:
-			self.member_sets
-		except:
-			raise Exception('member_sets not initialized')
-
-		if pbar:
-			pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)
-
-		for iteration in range(self.nb_iterations):
-			self.learnOnce(display = display)
+		def learn(self, display = False, pbar = False):
+			try:
+				self.member_sets
+			except:
+				raise Exception('member_sets not initialized')
 
 			if pbar:
-				pbar.update()
+				pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)
 
-	def initLearn(self, X, y, reg_stra, nb_members, n_init, display = False, pbar = False):
-		self.member_setsInit(X, y, reg_stra, nb_members, n_init, display = display)
-		self.learn(display = display, pbar = pbar)
+			for iteration in range(self.nb_iterations):
+				self.learnOnce(display = display)
+
+				if pbar:
+					pbar.update()
+
+		def initLearn(self, X, y, reg_stra, nb_members, n_init, display = False, pbar = False):
+			self.member_setsInit(X, y, reg_stra, nb_members, n_init, display = display)
+			self.learn(display = display, pbar = pbar)
 
 

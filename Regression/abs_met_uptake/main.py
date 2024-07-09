@@ -1,7 +1,8 @@
 import pandas as pd
 
 from oracleOnly import oracleOnly
-from randomQuery import randomQuery
+from baseline import randomQuery
+
 from plotResults import plotResults
 from comparisonAlProcessBaseline import comparisonAlProcessBaseline
 

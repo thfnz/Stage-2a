@@ -4,16 +4,20 @@ import matplotlib.pyplot as plt
 
 from assistFunct import check_images_dir
 
+def namestr(obj, namespace):
+	# https://stackoverflow.com/questions/34980833/python-name-of-np-array-variable-as-string
+	return [name for name in namespace if namespace[name] is obj]
+
 def plot_hist_n_top_acc(n_top_accs, reg_stra, display = False, save = False):
 	plt.figure()
-	plt.hist(n_top_accs)
+	plt.hist(n_top_accs, bins = 5)
 
 	if display:
 		plt.show()
 
 	if save:
 		check_images_dir('')
-		path = './images/plot_hist_n_top_acc_'
+		path = './images/plot_hist_' + str(namestr(n_top_accs, globals())) + '_'
 		for stra in reg_stra:
 			path += (stra + '_')
 		plt.savefig(path + '.png', dpi=300)
@@ -36,9 +40,10 @@ class comparisonAlProcessBaseline:
 		self.baseline_n_top_accs = []
 
 		# Same member_sets initialization
-		member_sets = self.alProcess.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
-		self.alProcess.member_sets = member_sets
-		self.baseline.member_sets = member_sets
+		member_sets, X_test, y_test = self.alProcess.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
+		self.alProcess.member_sets, self.baseline.member_sets = member_sets, member_sets
+		self.baseline.X, self.baseline.y, self.baseline.reg_stra = self.X, self.y, self.reg_stra
+		self.baseline.X_test, self.baseline.y_test = X_test, y_test
 
 		# Retrieval of the last n_top accuracy after AL
 		for idx_process in range(nb_processes):

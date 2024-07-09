@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 def random_training_set(X, y, n_init):
 	# Return a random training set of n_init elements
@@ -16,13 +17,16 @@ def ask_oracle(y_test, query):
 	# Simulates the request to the oracle
 	return y_test[query]
 
-def new_datasets(X_train, y_train, X_test, y_test, query):
+def new_datasets(X_train, y_train, X_test, y_test, query, ans, oracle):
 	## TODO implement threshold
 	# Labeling
-	answer = ask_oracle(y_test, query)
+	if oracle:
+		answer = ask_oracle(y_test, query)
+	else:
+		answer = ans
 
 	# New dataset
-	X_train = np.concatenate((X_train, X_test[query]), axis = 0)
+	X_train = np.concatenate((X_train, X_test[query]), axis = 0) # In this case, axis = 0 is useless because dim(X) = 1
 	y_train = np.concatenate((y_train, answer))
 
 	return X_train, y_train

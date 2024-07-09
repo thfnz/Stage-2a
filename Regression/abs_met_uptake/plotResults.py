@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import os
 
 from assistFunct import check_images_dir
 

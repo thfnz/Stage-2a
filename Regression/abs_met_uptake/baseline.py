@@ -43,7 +43,7 @@ class randomQuery:
 				self.member_sets.append([X_train_feature, y_train_feature, [], [], reg_stra[0]], [])
 				X_train, y_train = delete_data(X_train, y_train, idx_init)
 
-		return self.member_sets
+		return self.member_sets, self.X_test, self.y_test
 
 	def learnOnce(self, display = False):
 
@@ -97,7 +97,7 @@ class randomQuery:
 			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
 
-		return self.member_sets[0][0][- (self.batch_size + self.batch_size_highest_value)], self.member_sets[0][1][- (self.batch_size + self.batch_size_highest_value)]		
+		return self.member_sets[0][0][-self.batch_size], self.member_sets[0][1][self.batch_size]		
 
 	def learn(self, display = False, pbar = False):
 		try:
