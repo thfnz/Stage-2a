@@ -199,7 +199,7 @@ class selfLabelingInde:
 					idx += 1
 
 		n_top_accuracy = (in_top / self.n_top) * 100
-		self.class_set[0].append(n_top_accuracy) # Need to be changed if plot
+		self.class_set[0].append(n_top_accuracy)
 
 		if display:
 			print('(selfLabelingInde) Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')

@@ -46,8 +46,8 @@ class comparisonAlProcessBaseline:
 			# Same member_sets initialization
 			member_sets, X_test, y_test = al.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
 			al.member_sets, base.member_sets = member_sets, member_sets
-			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 			base.X_test, base.y_test = X_test, y_test
+			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 
 			al.learn(display = display, pbar = pbar)
 			base.learn(display = display, pbar = pbar)
