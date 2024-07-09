@@ -3,12 +3,9 @@ import gc
 import matplotlib.pyplot as plt
 
 from assistFunct import check_images_dir
+from plotResults import plotResults
 
-def namestr(obj, namespace):
-	# https://stackoverflow.com/questions/34980833/python-name-of-np-array-variable-as-string
-	return [name for name in namespace if namespace[name] is obj]
-
-def plot_hist_n_top_acc(n_top_accs, reg_stra, display = False, save = False):
+def plot_hist_n_top_acc(n_top_accs, reg_stra, name, display = False, save = False):
 	plt.figure()
 	plt.hist(n_top_accs, bins = 5)
 
@@ -17,7 +14,7 @@ def plot_hist_n_top_acc(n_top_accs, reg_stra, display = False, save = False):
 
 	if save:
 		check_images_dir('')
-		path = './images/plot_hist_' + str(namestr(n_top_accs, globals())) + '_'
+		path = './images/plot_hist_' + name + '_'
 		for stra in reg_stra:
 			path += (stra + '_')
 		plt.savefig(path + '.png', dpi=300)
@@ -35,7 +32,7 @@ class comparisonAlProcessBaseline:
 		self.nb_members = nb_members
 		self.n_init = n_init
 
-	def comparison_top_n_accuracy(self, nb_processes, display = False, save = True, pbar = False):
+	def comparison_top_n_accuracy(self, nb_processes, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display = False, save = True, pbar = False):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
 
@@ -56,10 +53,21 @@ class comparisonAlProcessBaseline:
 			self.alProcess_n_top_accs.append(al.class_set[-1])
 			self.baseline_n_top_accs.append(base.class_set[-1])
 
+			# plot_top_n_accuracy
+			if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
+				plot_al = plotResults(al)
+				plot_base = plotResults(base)
+
+				plot_al.top_n_accuracy(name = 'alProcess_it' + str(idx_process), folder = 'top_n_accuracy/al', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+				plot_base.top_n_accuracy(name = 'base_it' + str(idx_process), folder = 'top_n_accuracy/base', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+
+				del plot_al
+				del plot_base
+
 			del al
 			del base
 			gc.collect()
 
 		# Plot
-		plot_hist_n_top_acc(self.alProcess_n_top_accs, self.reg_stra, display = display, save = save)
-		plot_hist_n_top_acc(self.baseline_n_top_accs, self.reg_stra, display = display, save = save)
+		plot_hist_n_top_acc(self.alProcess_n_top_accs, self.reg_stra, 'alProcess_n_top_accs', display = display, save = save)
+		plot_hist_n_top_acc(self.baseline_n_top_accs, self.reg_stra, 'baseline_n_top_accs', display = display, save = save)

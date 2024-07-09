@@ -30,4 +30,4 @@ n_init = 10
 alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value)
 comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init)
-comp.comparison_top_n_accuracy(10, display = False, save = True, pbar = True)
+comp.comparison_top_n_accuracy(10, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, display = False, save = True, pbar = True)

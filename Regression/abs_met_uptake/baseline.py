@@ -20,6 +20,7 @@ class randomQuery:
 	def __init__(self, nb_iterations, batch_size = 1, n_top = 100):
 		self.nb_iterations = nb_iterations
 		self.batch_size = batch_size
+		self.batch_size_highest_value = -1
 		self.n_top = n_top
 		self.class_set = [] # [[n_top_accuracy], ..., ]
 
@@ -94,7 +95,7 @@ class randomQuery:
 
 		# New datasets
 		for idx_model in range(nb_members):
-			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query)
+			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query, [], oracle = True)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
 
 		return self.member_sets[0][0][-self.batch_size], self.member_sets[0][1][self.batch_size]		
