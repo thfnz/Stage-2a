@@ -112,7 +112,7 @@ class selfLabelingInde:
 		self.batch_size_min_uncertainty = batch_size_min_uncertainty
 		self.threshold = threshold
 		self.n_top = n_top
-		self.class_set = [[]] # [[n_top_accuracy]]
+		self.class_set = [[], []] # [[n_top_accuracy], [amount of self labeled instances]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -225,6 +225,8 @@ class selfLabelingInde:
 				if not alreadyQueried:
 					idxs_selfLabel.append(selfLabel[0])
 					values_selfLabel.append(selfLabel[1])
+
+		self.class_set[1].append(len(idxs_selfLabel))
 
 		if len(idxs_selfLabel) > 0:
 			for member in self.member_sets:

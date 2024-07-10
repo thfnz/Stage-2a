@@ -5,6 +5,7 @@ from selfLabelingInde import selfLabelingInde
 from baseline import randomQuery, fastRandomQuery
 
 from plotResults import plotResults
+from assistPlot import assistPlot
 from comparisonAlProcessBaseline import comparisonAlProcessBaseline
 
 # Loading dataset
@@ -22,7 +23,7 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 reg_stra = ['XGB', 'randomForest']
 
 # AL
-nb_iterations = 130
+nb_iterations = 5
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
@@ -30,8 +31,13 @@ nb_members = 2
 n_init = 10
 threshold = 1e-3
 
-alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
-# alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty)
+# alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
+alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty)
 baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value)
 comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init)
-comp.comparison_top_n_accuracy(20, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display = False, save = True, pbar = True)
+comp.comparison_top_n_accuracy(
+	20, pbar = True,
+	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, 
+	display_plot_r2 = False, save_plot_r2 = False, 
+	display_self_labeled_data_amount = False, save_self_labeled_data_amount = True,
+	display = False, save = True)

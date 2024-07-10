@@ -5,6 +5,7 @@ import numpy as np
 
 from assistFunct import check_images_dir
 from plotResults import plotResults
+from assistPlot import assistPlot
 
 def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save = False):
 	plt.figure()
@@ -34,7 +35,7 @@ class comparisonAlProcessBaseline:
 		self.nb_members = nb_members
 		self.n_init = n_init
 
-	def comparison_top_n_accuracy(self, nb_processes, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display = False, save = True, pbar = False):
+	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
 
@@ -71,6 +72,11 @@ class comparisonAlProcessBaseline:
 
 				del plot_al
 				del plot_base
+
+			if display_self_labeled_data_amount or save_self_labeled_data_amount:
+				assistPlot_al = assistPlot(al)
+				assistPlot_al.self_labeled_data_amount(folder = 'sld_amount/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
+				del assistPlot_al
 
 			del al
 			del base
