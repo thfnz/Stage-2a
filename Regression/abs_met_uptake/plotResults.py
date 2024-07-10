@@ -27,6 +27,8 @@ class plotResults:
 			check_images_dir(folder)
 			path = './images/' + folder + 'plot_top_n_accuracy_' + name + '_'
 			for stra in self.alProcess.reg_stra:
+				if type(stra) == list:
+					stra = stra[0]
 				path += (stra + '_')
 			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_bshv' + str(self.alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
 
@@ -61,6 +63,8 @@ class plotResults:
 			check_images_dir(folder)
 			path = 'images/' + folder + 'selfLabelingInde_plot_r2_' + name + '_'
 			for stra in self.alProcess.reg_stra:
+				if type(stra) == list:
+					stra = stra[0]
 				path += (stra + '_')
 			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_bshv' + str(self.alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
 

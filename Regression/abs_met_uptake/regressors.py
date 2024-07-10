@@ -13,8 +13,8 @@ def regression_strategy(reg_stra):
 		case 'randomForest':
 			model = RandomForestRegressor(n_estimators = 800, criterion = 'squared_error', n_jobs = -1)
 
-		case 'elasticNet':
-			model = make_pipeline(PolynomialFeatures(degree = 4), StandardScaler(), ElasticNet(alpha = 1))
+		case ['elasticNet', int(degree), int(alpha)]:
+			model = make_pipeline(PolynomialFeatures(degree = degree), StandardScaler(), ElasticNet(alpha = alpha))
 
 		case 'elasticNetCV':
 			cv = RepeatedKFold(n_splits = 10, n_repeats = 1, random_state = None)

@@ -26,6 +26,8 @@ class assistPlot:
 			check_images_dir(folder)
 			path = './images/' + folder + 'self_labeled_data_amount_' + name + '_'
 			for stra in self.alProcess.reg_stra:
+				if type(stra) == list:
+					stra = stra[0]
 				path += (stra + '_')
 			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_bshv' + str(self.alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
 
