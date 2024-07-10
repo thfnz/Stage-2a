@@ -44,12 +44,19 @@ class plotResults:
 		fix, axs = plt.subplots(lines, columns, figsize = (15, 12))
 		l, c = 0, 0
 		for idx_model in range(lines * columns):
+			title = 'Model ('
+			if type(self.alProcess.member_sets[idx_model][4]) == list:
+				title += self.alProcess.member_sets[idx_model][4][-1]
+			else:
+				title += self.alProcess.member_sets[idx_model][4]
+			title += ') ' + str(idx_model + 1)
+			
 			if lines == 1:
 				axs[c].plot(range(len(self.alProcess.member_sets[idx_model][3])), self.alProcess.member_sets[idx_model][3])
-				axs[c].set_title('Model (' + self.alProcess.member_sets[idx_model][4] + ') ' + str(idx_model + 1))
+				axs[c].set_title(title)
 			else:
 				axs[l, c].plot(range(len(self.alProcess.member_sets[idx_model][3])), self.alProcess.member_sets[idx_model][3])
-				axs[l, c].set_title('Model (' + self.alProcess.member_sets[idx_model][4] + ') ' + str(idx_model + 1))
+				axs[l, c].set_title(title)
 
 			if l == lines - 1:
 				l = 0
