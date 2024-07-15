@@ -163,7 +163,7 @@ class twoStepsCheck:
 
 		n_top_accuracy = (in_top / self.n_top) * 100
 		self.class_set[idx_save].append(n_top_accuracy)
-		print('(' + training_set + ') Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
+		# print('(' + training_set + ') Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
 
 	def learnOnce(self, display = False):
 
@@ -223,7 +223,6 @@ class twoStepsCheck:
 
 		# n_top accuracy
 		self.n_top_accuracy(6, 2, 'n_top_train')
-		print('\n')
 
 		# New datasets
 		# Oracle labeling

@@ -5,7 +5,7 @@ import pandas as pd
 from oracleOnly import oracleOnly
 from selfLabelingInde import selfLabelingInde
 sys.path.append('./Tests')
-from selfLabelingInde_2stepscheck import twoStepsCheck
+from twoStepsNtop import twoStepsCheck
 from baseline import randomQuery, fastRandomQuery
 
 from plotResults import plotResults
@@ -27,15 +27,15 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR)
 reg_stra = ['XGB', 'randomForest']
-# reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10]]
+# reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
 
 # AL
-nb_iterations = 5
+nb_iterations = 140
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
 nb_members = 4
-n_init = 10
+n_init = 5
 threshold = 1e-3
 
 # alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
@@ -67,7 +67,8 @@ comp.comparison_top_n_accuracy(
 """
 
 # """
-n_top_train = 20
-alProcess = twoStepsCheck(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 20)
-alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = False)
+n_top_train = 100 
+alProcess = twoStepsCheck(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
+alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
 alProcess.plot_top_n_accuracy(display = False, save = True)
+# """
