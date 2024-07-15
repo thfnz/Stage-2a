@@ -1,8 +1,11 @@
+import sys
 import warnings
 import pandas as pd
 
 from oracleOnly import oracleOnly
 from selfLabelingInde import selfLabelingInde
+sys.path.append('./Tests')
+from selfLabelingInde_2stepscheck import twoStepsCheck
 from baseline import randomQuery, fastRandomQuery
 
 from plotResults import plotResults
@@ -23,15 +26,15 @@ X = dataset[feature_columns].values # 69840 instances
 y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR)
-reg_stra = [['elasticNet', 3, 10], ['elasticNet', 4, 10]]
-#reg_stra = []
+reg_stra = ['XGB', 'randomForest']
+# reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10]]
 
 # AL
 nb_iterations = 5
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
-nb_members = 2
+nb_members = 4
 n_init = 10
 threshold = 1e-3
 
@@ -39,18 +42,18 @@ threshold = 1e-3
 alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty)
 baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value)
 
-# """
+"""
 # Evaluation of selected models
 alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
 
 plot = plotResults(alProcess)
-plot.top_n_accuracy(display = False, save = True)
-plot.r2(1, 1, display = False, save = True)
-plot.KDE_n_top(display = False, save = True)
+plot.top_n_accuracy(display = False, save = False)
+plot.r2(2, 2, display = False, save = False)
+plot.KDE_n_top(display = False, save = False)
 
 astPlot = assistPlot(alProcess)
-astPlot.self_labeled_data_amount(display = False, save = True)
-# """
+astPlot.self_labeled_data_amount(display = False, save = False)
+"""
 
 """
 # Comparison to a baseline
@@ -62,3 +65,9 @@ comp.comparison_top_n_accuracy(
 	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
 	display = False, save = True)
 """
+
+# """
+n_top_train = 20
+alProcess = twoStepsCheck(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 20)
+alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = False)
+alProcess.plot_top_n_accuracy(display = False, save = True)
