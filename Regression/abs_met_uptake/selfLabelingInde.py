@@ -112,7 +112,7 @@ class selfLabelingInde:
 		self.batch_size_min_uncertainty = batch_size_min_uncertainty
 		self.threshold = threshold
 		self.n_top = n_top
-		self.class_set = [[], []] # [[n_top_accuracy], [amount of self labeled instances]]
+		self.class_set = [[], [], []] # [[n_top_accuracy], [n_top_idxs], [amount of self labeled instances]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -182,12 +182,12 @@ class selfLabelingInde:
 			query = np.argsort(y_pred)[-self.n_top:]
 			for idx_query in query:
 				votes.append([[idx_query, 1]])
-		list_idx_highest_target = vote_count(votes, self.n_top)
+		self.class_set[1] = vote_count(votes, self.n_top)
 
 		nb_instances = len(self.y)
 		y_argsorted = np.argsort(self.y)
 		in_top = 0
-		for idx_highest_target in list_idx_highest_target:
+		for idx_highest_target in self.class_set[1]:
 			found = False
 			idx = 0
 			while not found:
@@ -226,7 +226,7 @@ class selfLabelingInde:
 					idxs_selfLabel.append(selfLabel[0])
 					values_selfLabel.append(selfLabel[1])
 
-		self.class_set[1].append(len(idxs_selfLabel))
+		self.class_set[2].append(len(idxs_selfLabel))
 
 		if len(idxs_selfLabel) > 0:
 			for member in self.member_sets:

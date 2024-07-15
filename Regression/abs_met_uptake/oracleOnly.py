@@ -91,7 +91,7 @@ class oracleOnly:
 		self.batch_size = batch_size
 		self.batch_size_highest_value = batch_size_highest_value
 		self.n_top = n_top
-		self.class_set = [[]] # [[n_top_accuracy]]
+		self.class_set = [[], []] # [[n_top_accuracy], [n_top_idxs]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -160,12 +160,12 @@ class oracleOnly:
 			query = np.argsort(y_pred)[-self.n_top:]
 			for idx_query in query:
 				votes.append([[idx_query, 1]])
-		list_idx_highest_target = vote_count(votes, self.n_top)
+		self.class_set[2] = vote_count(votes, self.n_top)
 
 		nb_instances = len(self.y)
 		y_argsorted = np.argsort(self.y)
 		in_top = 0
-		for idx_highest_target in list_idx_highest_target:
+		for idx_highest_target in self.class_set[2]:
 			found = False
 			idx = 0
 			while not found:

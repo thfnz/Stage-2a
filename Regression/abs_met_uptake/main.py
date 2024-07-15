@@ -23,10 +23,11 @@ X = dataset[feature_columns].values # 69840 instances
 y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR)
-reg_stra = [['elasticNet', 4, 10], ['elasticNet', 3, 10]]
+reg_stra = [['elasticNet', 3, 10], ['elasticNet', 4, 10]]
+#reg_stra = []
 
 # AL
-nb_iterations = 130
+nb_iterations = 5
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
@@ -38,18 +39,21 @@ threshold = 1e-3
 alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty)
 baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value)
 
+# """
 # Evaluation of selected models
 alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
 
 plot = plotResults(alProcess)
 plot.top_n_accuracy(display = False, save = True)
-plot.r2(1, 2, display = False, save = True)
+plot.r2(1, 1, display = False, save = True)
+plot.KDE_n_top(display = False, save = True)
 
 astPlot = assistPlot(alProcess)
 astPlot.self_labeled_data_amount(display = False, save = True)
+# """
 
-# Comparison to a baseline
 """
+# Comparison to a baseline
 comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init)
 comp.comparison_top_n_accuracy(
 	20, pbar = True,

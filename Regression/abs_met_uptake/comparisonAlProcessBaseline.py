@@ -62,8 +62,8 @@ class comparisonAlProcessBaseline:
 				plot_base = plotResults(base)
 
 				if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
-					plot_al.top_n_accuracy(name = 'alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-					plot_base.top_n_accuracy(name = 'base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_al.top_n_accuracy(name = type(self).__name__ + 'alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_base.top_n_accuracy(name = type(self).__name__ + 'base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
