@@ -5,7 +5,7 @@ import pandas as pd
 from oracleOnly import oracleOnly
 from selfLabelingInde import selfLabelingInde
 sys.path.append('./Tests')
-from twoStepsNtop import twoStepsCheck
+from twoSteps import plot_top_n_accuracy, twoStepsNtop, twoStepsZone
 from baseline import randomQuery, fastRandomQuery
 
 from plotResults import plotResults
@@ -30,7 +30,7 @@ reg_stra = ['XGB', 'randomForest']
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
 
 # AL
-nb_iterations = 140
+nb_iterations = 90
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
@@ -67,8 +67,13 @@ comp.comparison_top_n_accuracy(
 """
 
 # """
-n_top_train = 100 
-alProcess = twoStepsCheck(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
+# 2 steps tests
+n_top_train = 150 - nb_iterations
+alProcess = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train)
+
+# batch_size_scnd_step = 150 - nb_iterations
+# alProcess = twoStepsZone(threshold, nb_iterations, batch_size_scnd_step, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
+
 alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
-alProcess.plot_top_n_accuracy(display = False, save = True)
+plot_top_n_accuracy(alProcess, display = False, save = True)
 # """

@@ -104,7 +104,67 @@ def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 
 ### AL
 
-class twoStepsCheck:
+def n_top_accuracy(alProcess, idx, idx_save, training_set):
+	votes = []
+	for idx_model in range(len(alProcess.member_sets)):
+		y_pred = alProcess.member_sets[idx_model][idx]
+		query = np.argsort(y_pred)[-alProcess.n_top:]
+		for idx_query in query:
+			votes.append([[idx_query, 1]])
+	list_idx_highest_target = vote_count(votes, alProcess.n_top)
+
+	nb_instances = len(alProcess.y)
+	y_argsorted = np.argsort(alProcess.y)
+	in_top = 0
+	for idx_highest_target in list_idx_highest_target:
+		found = False
+		idx = 0
+		while not found:
+			if idx_highest_target == y_argsorted[idx]:
+				found = True
+				if idx > nb_instances - (alProcess.n_top + 1):
+					in_top += 1
+			else:
+				idx += 1
+
+	n_top_accuracy = (in_top / alProcess.n_top) * 100
+	alProcess.class_set[idx_save].append(n_top_accuracy)
+	# print('(' + training_set + ') Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
+
+	return list_idx_highest_target
+
+def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save = False):
+		try:
+			alProcess.member_sets
+		except:
+			raise Exception('member_sets not initialized')
+		nb_members = len(alProcess.member_sets)
+
+		plt.figure()
+		plt.plot(range(1, len(alProcess.class_set[0]) + 1), alProcess.class_set[0], label = 'X_train')
+		plt.plot(range(1, len(alProcess.class_set[2]) + 1), alProcess.class_set[2], label = 'n_top')
+		if len(alProcess.class_set[3]) > 0:
+			plt.plot(range(1, len(alProcess.class_set[3]) + 1), alProcess.class_set[3], label = 'n_top_uncertainty')
+		plt.legend()
+		plt.xlabel('Iteration')
+		plt.ylabel('Accuracy (%)')
+		plt.title('Accuracy for the top ' + str(alProcess.n_top) + ' instances\nbatch_size : ' + str(alProcess.batch_size) + ' - batch_size_highest_value : ' + str(alProcess.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
+
+		if display:
+			plt.show()
+
+		if save:
+			check_images_dir(folder)
+			path = './images/' + folder + 'plot_top_n_accuracy_' + name + '_'
+			for stra in alProcess.reg_stra:
+				if type(stra) == list:
+					stra = stra[0]
+				path += (stra + '_')
+			plt.savefig(path + 'bs' + str(alProcess.batch_size) + '_bshv' + str(alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
+
+		plt.close()
+
+class twoStepsNtop:
 
 	def __init__(self, threshold, nb_iterations, batch_size = 1, batch_size_highest_value = 0, batch_size_min_uncertainty = -1, n_top = 100, n_top_train = 20):
 		self.nb_iterations = nb_iterations
@@ -114,15 +174,21 @@ class twoStepsCheck:
 		self.threshold = threshold
 		self.n_top = n_top
 		self.n_top_train = n_top_train
-		self.class_set = [[], [], [], []] # [[n_top_accuracy], [n_top_idxs], [n_top_accuracy_n_top_train], [amount of self labeled instances]]
+		self.class_set = [[], [], [], [], []] # [[n_top_accuracy], [n_top_idxs], [n_top_accuracy_n_top_train], [n_top_accuracy_n_top_train_uncertainty], [amount of self labeled instances]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
 		self.y = y
 		self.reg_stra = reg_stra
+		self.df_size = len(y)
+		self.usedToTrain = [False for i in range(self.df_size)] # Boolean representation of which data is used in X_train/y_train
 
 		self.member_sets = []
-		X_train, self.X_test, y_train, self.y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / len(y)))
+		idx_train, idx_test = train_test_split(list(range(self.df_size)), test_size = (1 - (nb_members * n_init) / self.df_size))
+		X_train, self.X_test, y_train, self.y_test = X[idx_train, :], X[idx_test, :], y[idx_train], y[idx_test]
+		self.X_train_init = X_train
+		for idx in idx_train:
+			self.usedToTrain[idx] = True
 
 		# Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
 		for idx_reg_stra in range(len(reg_stra)):
@@ -137,33 +203,6 @@ class twoStepsCheck:
 				X_train, y_train = delete_data(X_train, y_train, idx_init)
 
 		return self.member_sets, self.X_test, self.y_test
-
-	def n_top_accuracy(self, idx, idx_save, training_set):
-		votes = []
-		for idx_model in range(len(self.member_sets)):
-			y_pred = self.member_sets[idx_model][idx]
-			query = np.argsort(y_pred)[-self.n_top:]
-			for idx_query in query:
-				votes.append([[idx_query, 1]])
-		self.class_set[1] = vote_count(votes, self.n_top)
-
-		nb_instances = len(self.y)
-		y_argsorted = np.argsort(self.y)
-		in_top = 0
-		for idx_highest_target in self.class_set[1]:
-			found = False
-			idx = 0
-			while not found:
-				if idx_highest_target == y_argsorted[idx]:
-					found = True
-					if idx > nb_instances - (self.n_top + 1):
-						in_top += 1
-				else:
-					idx += 1
-
-		n_top_accuracy = (in_top / self.n_top) * 100
-		self.class_set[idx_save].append(n_top_accuracy)
-		# print('(' + training_set + ') Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
 
 	def learnOnce(self, display = False):
 
@@ -205,7 +244,7 @@ class twoStepsCheck:
 				final_query.append(candidate)
 
 		# n_top accuracy
-		self.n_top_accuracy(2, 0, 'X_train')
+		self.class_set[1] = n_top_accuracy(self, 2, 0, 'X_train')
 
 		# Training on the n_top_train highest predicted value
 		if self.n_top_train > self.n_top:
@@ -222,13 +261,52 @@ class twoStepsCheck:
 			self.member_sets[idx_model][6] = model.predict(self.X)
 
 		# n_top accuracy
-		self.n_top_accuracy(6, 2, 'n_top_train')
+		n_top_accuracy(self, 6, 2, 'n_top_train')
+
+		# Training on the n_top_train predicted value with lowest uncertainty
+		# uncertainty_pred_avg
+		uncertainty_pred_avg = []
+		for idx in range(len(uncertainty_pred)):
+			somme = 0
+			for idx_model in range(nb_members):
+				somme += self.member_sets[idx_model][5][idx]
+			uncertainty_pred_avg.append(somme / nb_members)
+
+		# n_top_uncertainty
+		n_top_uncertainty = []
+		for idx_highest_target in self.class_set[1]:
+			if self.usedToTrain[idx_highest_target]:
+				n_top_uncertainty.append(self.threshold) # Priority to training data (avoid conflicts with initial data sets) TODO : better solution
+			else:
+				# Relative idx (Bad practice ! :c)
+				idx = 0
+				found = False
+				while not found and idx < len(self.X_test[:, 0]):
+					if self.X[idx_highest_target, :].any() == self.X_test[idx, :].any():
+						found = True
+					else:
+						idx += 1
+				n_top_uncertainty.append(uncertainty_pred_avg[idx])
+
+		# Training
+		n_top_uncertainty_argsorted = np.argsort(n_top_uncertainty)
+		X_train, y_train = X_highest_target[n_top_uncertainty_argsorted[:self.n_top_train]], y_highest_target[n_top_uncertainty_argsorted[:self.n_top_train]]
+
+		for idx_model in range(nb_members):
+			model = regression_strategy(self.member_sets[idx_model][4])
+			model.fit(X_train, y_train)
+			self.member_sets[idx_model][6] = model.predict(self.X)
+
+		# n_top accuracy
+		n_top_accuracy(self, 6, 3, 'n_top_uncertainty')
 
 		# New datasets
 		# Oracle labeling
 		for idx_model in range(nb_members):
 			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query, [], oracle = True)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
+		for idx in final_query:
+			self.usedToTrain[idx] = True
 
 		# Self labeling
 		idxs_selfLabel = []
@@ -246,12 +324,14 @@ class twoStepsCheck:
 					idxs_selfLabel.append(selfLabel[0])
 					values_selfLabel.append(selfLabel[1])
 
-		self.class_set[3].append(len(idxs_selfLabel))
+		self.class_set[4].append(len(idxs_selfLabel))
 
 		if len(idxs_selfLabel) > 0:
 			for member in self.member_sets:
 				member[0], member[1] = new_datasets(member[0], member[1], self.X_test, [], idxs_selfLabel, values_selfLabel, oracle = False)
 			self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(idxs_selfLabel))
+		for idx in idxs_selfLabel:
+			self.usedToTrain[idx] = True
 
 		return self.member_sets[0][0][- (self.batch_size + self.batch_size_highest_value)], self.member_sets[0][1][- (self.batch_size + self.batch_size_highest_value)]
 
@@ -274,31 +354,4 @@ class twoStepsCheck:
 		self.member_setsInit(X, y, reg_stra, nb_members, n_init, display = display)
 		self.learn(display = display, pbar = pbar)
 
-	def plot_top_n_accuracy(self, name = '', folder = '', display = False, save = False):
-		try:
-			self.member_sets
-		except:
-			raise Exception('member_sets not initialized')
-		nb_members = len(self.member_sets)
 
-		plt.figure()
-		plt.plot(range(1, len(self.class_set[0]) + 1), self.class_set[0], label = 'X_train')
-		plt.plot(range(1, len(self.class_set[2]) + 1), self.class_set[2], label = 'n_top')
-		plt.legend()
-		plt.xlabel('Iteration')
-		plt.ylabel('Accuracy (%)')
-		plt.title('Accuracy for the top ' + str(self.n_top) + ' instances\nbatch_size : ' + str(self.batch_size) + ' - batch_size_highest_value : ' + str(self.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
-
-		if display:
-			plt.show()
-
-		if save:
-			check_images_dir(folder)
-			path = './images/' + folder + 'plot_top_n_accuracy_' + name + '_'
-			for stra in self.reg_stra:
-				if type(stra) == list:
-					stra = stra[0]
-				path += (stra + '_')
-			plt.savefig(path + 'bs' + str(self.batch_size) + '_bshv' + str(self.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
-
-		plt.close()
