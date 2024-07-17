@@ -105,6 +105,7 @@ def uncertainty_predictor(X_train, y_train, X_test, reg_stra, display = False):
 ### AL
 
 def n_top_accuracy(alProcess, idx, idx_save, training_set):
+	# Votes
 	votes = []
 	for idx_model in range(len(alProcess.member_sets)):
 		y_pred = alProcess.member_sets[idx_model][idx]
@@ -113,6 +114,11 @@ def n_top_accuracy(alProcess, idx, idx_save, training_set):
 			votes.append([[idx_query, 1]])
 	list_idx_highest_target = vote_count(votes, alProcess.n_top)
 
+	# Descending list_idx_highest_target
+	list_values_highest_target = [alProcess.y[idx] for idx in list_idx_highest_target]
+	descending_list_idx_highest_target = [list_idx_highest_target[idx] for idx in np.argsort(list_values_highest_target)[::-1]]
+
+	# n_top_accuracy
 	nb_instances = len(alProcess.y)
 	y_argsorted = np.argsort(alProcess.y)
 	in_top = 0
@@ -131,7 +137,7 @@ def n_top_accuracy(alProcess, idx, idx_save, training_set):
 	alProcess.class_set[idx_save].append(n_top_accuracy)
 	# print('(' + training_set + ') Top ' + str(self.n_top) + ' accuracy : ' + str(n_top_accuracy) + '%')
 
-	return list_idx_highest_target
+	return descending_list_idx_highest_target
 
 def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save = False):
 		try:
@@ -174,7 +180,7 @@ class twoStepsNtop:
 		self.threshold = threshold
 		self.n_top = n_top
 		self.n_top_train = n_top_train
-		self.class_set = [[], [], [], [], []] # [[n_top_accuracy], [n_top_idxs], [n_top_accuracy_n_top_train], [n_top_accuracy_n_top_train_uncertainty], [amount of self labeled instances]]
+		self.class_set = [[], [], [], [], []] # [[n_top_accuracy], [descending_n_top_idxs], [n_top_accuracy_n_top_train], [n_top_accuracy_n_top_train_uncertainty], [amount of self labeled instances]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -252,8 +258,7 @@ class twoStepsNtop:
 
 		y_highest_target = self.y[self.class_set[1]]
 		X_highest_target = self.X[self.class_set[1]]
-		y_highest_target_argsorted = np.argsort(y_highest_target)
-		X_train, y_train = X_highest_target[y_highest_target_argsorted[-self.n_top_train:]], y_highest_target[y_highest_target_argsorted[-self.n_top_train:]]
+		X_train, y_train = X_highest_target[-self.n_top_train:], y_highest_target[-self.n_top_train:]
 
 		for idx_model in range(nb_members):
 			model = regression_strategy(self.member_sets[idx_model][4])
@@ -272,11 +277,16 @@ class twoStepsNtop:
 				somme += self.member_sets[idx_model][5][idx]
 			uncertainty_pred_avg.append(somme / nb_members)
 
-		# n_top_uncertainty
+		# n_top_uncertainty (new dataset containing all X_train data in the n_top + n_top_train new instances (based on uncertainty))
+		idx_n_top_uncertainty_training = []
+
+		nb_already_labeled = 0
 		n_top_uncertainty = []
-		for idx_highest_target in self.class_set[1]:
+		for idx_n_top_relative in range(len(self.class_set[1])):
+			idx_highest_target = self.class_set[1][idx_n_top_relative]
 			if self.usedToTrain[idx_highest_target]:
-				n_top_uncertainty.append(self.threshold) # Priority to training data (avoid conflicts with initial data sets) TODO : better solution
+				idx_n_top_uncertainty_training.append(idx_n_top_relative) # Keep same length (thus same idx) as all n_top sized list
+				nb_already_labeled += 1
 			else:
 				# Relative idx (Bad practice ! :c)
 				idx = 0
@@ -286,11 +296,17 @@ class twoStepsNtop:
 						found = True
 					else:
 						idx += 1
-				n_top_uncertainty.append(uncertainty_pred_avg[idx])
+				n_top_uncertainty.append([uncertainty_pred_avg[idx], idx_n_top_relative])
+		print('nb_already_labeled = ', nb_already_labeled)
+
+		n_top_uncertainty = np.array(n_top_uncertainty)
+		n_top_uncertainty_argsorted = np.argsort(n_top_uncertainty[:, 0])[::-1]
+		for i in range(self.n_top_train):
+			idx_n_top_uncertainty_training.append(n_top_uncertainty[n_top_uncertainty_argsorted[i], 1])
+		idx_n_top_uncertainty_training = np.array(idx_n_top_uncertainty_training, dtype = int)
 
 		# Training
-		n_top_uncertainty_argsorted = np.argsort(n_top_uncertainty)
-		X_train, y_train = X_highest_target[n_top_uncertainty_argsorted[:self.n_top_train]], y_highest_target[n_top_uncertainty_argsorted[:self.n_top_train]]
+		X_train, y_train = X_highest_target[idx_n_top_uncertainty_training], y_highest_target[idx_n_top_uncertainty_training]
 
 		for idx_model in range(nb_members):
 			model = regression_strategy(self.member_sets[idx_model][4])

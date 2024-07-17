@@ -34,7 +34,7 @@ nb_iterations = 90
 batch_size = 1
 batch_size_highest_value = 0
 batch_size_min_uncertainty = -1
-nb_members = 4
+nb_members = 2
 n_init = 5
 threshold = 1e-3
 
@@ -68,12 +68,12 @@ comp.comparison_top_n_accuracy(
 
 # """
 # 2 steps tests
-n_top_train = 150 - nb_iterations
-alProcess = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train)
+n_top_train = 150 - nb_iterations - nb_members * n_init
+alProcess = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, 100, n_top_train)
 
 # batch_size_scnd_step = 150 - nb_iterations
 # alProcess = twoStepsZone(threshold, nb_iterations, batch_size_scnd_step, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
 
-alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
+alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = False)
 plot_top_n_accuracy(alProcess, display = False, save = True)
 # """
