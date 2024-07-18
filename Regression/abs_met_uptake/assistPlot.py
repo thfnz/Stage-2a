@@ -7,15 +7,15 @@ class assistPlot:
 	def __init__(self, alProcess):
 		self.alProcess = alProcess
 
-	def self_labeled_data_amount(self, name = '', folder = '', display = False, save = True):
+	def self_labeled_data_amount(self, idx = 2, name = '', folder = '', display = False, save = True):
 		try:
-			self.alProcess.class_set[2]
+			self.alProcess.class_set[idx]
 		except:
 			raise Exception('The model has not labeled a single data by itself')
 		nb_members = len(self.alProcess.member_sets)
 
 		plt.figure()
-		plt.plot(range(1, len(self.alProcess.class_set[2]) + 1), self.alProcess.class_set[2])
+		plt.plot(range(1, len(self.alProcess.class_set[idx]) + 1), self.alProcess.class_set[idx])
 		plt.xlabel('Iteration')
 		plt.ylabel('Nubmer of =/= self labeled instances')
 

@@ -68,14 +68,14 @@ class comparisonAlProcessBaseline:
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
 					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = 'r2/al/', display = display_plot_r2, save = save_plot_r2)
-					plot_al.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
+					plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_base
 
 			if display_self_labeled_data_amount or save_self_labeled_data_amount:
 				assistPlot_al = assistPlot(al)
-				assistPlot_al.self_labeled_data_amount(folder = 'sld_amount/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
+				assistPlot_al.self_labeled_data_amount(idx = 2, name = '_it' + str(idx_process + 1), folder = 'sld_amount/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
 				del assistPlot_al
 
 			del al

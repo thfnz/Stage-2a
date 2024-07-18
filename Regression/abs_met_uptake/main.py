@@ -11,6 +11,7 @@ from baseline import randomQuery, fastRandomQuery
 from plotResults import plotResults
 from assistPlot import assistPlot
 from comparisonAlProcessBaseline import comparisonAlProcessBaseline
+from comparisonAlProcessBaseline2steps import comparisonAlProcessBaseline2steps
 
 # warnings.filterwarnings("ignore") # Skip convergence warnings
 
@@ -30,17 +31,25 @@ reg_stra = ['XGB', 'randomForest']
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
 
 # AL
-nb_iterations = 90
-batch_size = 1
-batch_size_highest_value = 0
-batch_size_min_uncertainty = -1
 nb_members = 2
 n_init = 5
+
+nb_label_total = 150
+nb_query_oracle = 100 # First step only
+nb_iterations = nb_query_oracle - nb_members * n_init
+
+batch_size = 1
+batch_size_highest_value = 0
+batch_size_min_uncertainty = 0
+
 threshold = 1e-3
 
+# n_top = int(len(y) * 0.01)
+n_top = 100
+
 # alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
-alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty)
-baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value)
+# alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
+# baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
 
 """
 # Evaluation of selected models
@@ -68,12 +77,21 @@ comp.comparison_top_n_accuracy(
 
 # """
 # 2 steps tests
-n_top_train = 150 - nb_iterations - nb_members * n_init
-alProcess = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, 100, n_top_train)
+n_top_train = nb_label_total - nb_query_oracle
+alProcess = selfLabelingInde(threshold, nb_iterations + n_top_train, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
+alProcess2steps = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top, n_top_train)
+baseline = fastRandomQuery(nb_iterations + n_top_train, batch_size + batch_size_highest_value, n_top)
 
 # batch_size_scnd_step = 150 - nb_iterations
 # alProcess = twoStepsZone(threshold, nb_iterations, batch_size_scnd_step, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
 
-alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = False)
-plot_top_n_accuracy(alProcess, display = False, save = True)
+comp = comparisonAlProcessBaseline2steps(alProcess, alProcess2steps, baseline, X, y, reg_stra, nb_members, n_init)
+comp.comparison_top_n_accuracy(
+	20, pbar = True,
+	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
+	display_plot_r2 = False, save_plot_r2 = True, 
+	display_self_labeled_data_amount = False, save_self_labeled_data_amount = True,
+	display = False, save = True)
 # """
+
+
