@@ -141,11 +141,11 @@ class selfLabelingInde:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learnOnce) member_sets not initialized')
 		nb_members = len(self.member_sets)
 
 		if self.batch_size < 1 and self.batch_size_highest_value < 1:
-			raise Exception('At least one batch_size must be > 1')
+			raise Exception('(learnOnce) At least one batch_size must be > 1')
 
 		# Uncertainty sampling
 		if self.batch_size > 0: 
@@ -239,7 +239,7 @@ class selfLabelingInde:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learn) member_sets not initialized')
 
 		if pbar:
 			pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)

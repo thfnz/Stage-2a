@@ -2,11 +2,14 @@ import copy
 import gc
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 from assistFunct import check_images_dir
 from plotResults import plotResults
 from assistPlot import assistPlot
 from twoSteps import plot_top_n_accuracy, plot_nb_already_labeled
+sys.path.append('../')
+from logs import logs
 
 def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save = False):
 	plt.figure()
@@ -37,7 +40,7 @@ class comparisonAlProcessBaseline2steps:
 		self.nb_members = nb_members
 		self.n_init = n_init
 
-	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display = False, save = True):
+	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.alProcess2steps_n_top_accs = []
 		self.alProcess2steps_n_top_train = []
@@ -101,6 +104,19 @@ class comparisonAlProcessBaseline2steps:
 				assistPlot_al.self_labeled_data_amount(idx = 2, name = 'it' + str(idx_process + 1), folder = 'sld_amount/al/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
 				assistPlot_al2steps.self_labeled_data_amount(idx = 4, name = 'it' + str(idx_process + 1), folder = 'sld_amount/al2steps/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
 				del assistPlot_al
+
+			if display_logs or save_logs:
+				### TODO : display_logs
+				logs_al = logs(al)
+				logs_al2steps = logs(al2steps)
+				if type(self.baseline).__name__ != 'fastRandomQuery':
+					logs_base = logs(base)
+
+				if save_logs:
+					logs_al.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'al/')
+					logs_al2steps.gen_save(n_init = self.n_init, twoSteps = True, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'al2steps/')
+					if type(self.baseline).__name__ != 'fastRandomQuery':
+						logs_base.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'base/')
 
 			del al
 			del base

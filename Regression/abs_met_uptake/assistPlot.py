@@ -11,7 +11,7 @@ class assistPlot:
 		try:
 			self.alProcess.class_set[idx]
 		except:
-			raise Exception('The model has not labeled a single data by itself')
+			raise Exception('(self_labeled_data_amount) The model has not labeled a single data by itself')
 		nb_members = len(self.alProcess.member_sets)
 
 		plt.figure()

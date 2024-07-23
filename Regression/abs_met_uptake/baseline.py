@@ -51,11 +51,11 @@ class randomQuery:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learnOnce) member_sets not initialized')
 		nb_members = len(self.member_sets)
 
 		if self.batch_size < 1:
-			raise Exception('batch_size must be > 0')
+			raise Exception('(learnOnce) batch_size must be > 0')
 
 		# Training and prediction
 		for idx_model in range(nb_members):
@@ -109,7 +109,7 @@ class randomQuery:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learn) member_sets not initialized')
 
 		if pbar:
 			pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)
@@ -160,11 +160,11 @@ class fastRandomQuery:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learn) member_sets not initialized')
 		nb_members = len(self.member_sets)
 
 		if self.batch_size < 1:
-			raise Exception('batch_size must be > 0')
+			raise Exception('(learn) batch_size must be > 0')
 
 		# Sampling 
 		final_query = random_query(self.X_test, self.batch_size * self.nb_iterations)

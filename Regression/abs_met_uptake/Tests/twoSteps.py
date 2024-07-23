@@ -143,7 +143,7 @@ def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save
 		try:
 			alProcess.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(plot_top_n_accuracy) member_sets not initialized')
 		nb_members = len(alProcess.member_sets)
 
 		plt.figure()
@@ -173,7 +173,7 @@ def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save
 
 def plot_nb_already_labeled(alProcess, name = '', folder = '', display = False, save = False):
 	if len(alProcess.class_set[5]) == 0:
-		raise Exception('Model has never learned')
+		raise Exception('(plot_nb_already_labeled) Model has never learned')
 		
 	plt.figure()
 	plt.plot(range(1, len(alProcess.class_set[5]) + 1), alProcess.class_set[5])
@@ -239,11 +239,11 @@ class twoStepsNtop:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learnOnce) member_sets not initialized')
 		nb_members = len(self.member_sets)
 
 		if self.batch_size < 1 and self.batch_size_highest_value < 1:
-			raise Exception('At least one batch_size must be > 1')
+			raise Exception('(learnOnce) At least one batch_size must be > 1')
 
 		# Uncertainty sampling
 		if self.batch_size > 0: 
@@ -279,7 +279,7 @@ class twoStepsNtop:
 		"""
 		# Training on the n_top_train highest predicted value
 		if self.n_top_train > self.n_top:
-			raise Exception('n_top_train > n_top')
+			raise Exception('(learnOnce) n_top_train > n_top')
 
 		y_highest_target = self.y[self.class_set[1]]
 		X_highest_target = self.X[self.class_set[1]]
@@ -383,7 +383,7 @@ class twoStepsNtop:
 		try:
 			self.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(learn) member_sets not initialized')
 
 		if pbar:
 			pbar = pyprind.ProgBar(self.nb_iterations, stream = sys.stdout)

@@ -1,2 +1,2 @@
 clean:
-	rm -rf images
+	rm -rf images logs

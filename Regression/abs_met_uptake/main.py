@@ -36,8 +36,7 @@ n_init = 5
 
 nb_label_total = 150
 nb_query_oracle = 100 # First step only
-#nb_iterations = nb_query_oracle - nb_members * n_init
-nb_iterations = 3
+nb_iterations = nb_query_oracle - nb_members * n_init
 
 batch_size = 1
 batch_size_highest_value = 0
@@ -78,8 +77,8 @@ comp.comparison_top_n_accuracy(
 
 # """
 # 2 steps tests
-#n_top_train = nb_label_total - nb_query_oracle
-n_top_train = 3
+n_top_train = nb_label_total - nb_query_oracle
+
 alProcess = selfLabelingInde(threshold, nb_iterations + n_top_train, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
 alProcess2steps = twoStepsNtop(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top, n_top_train)
 baseline = fastRandomQuery(nb_iterations + n_top_train, batch_size + batch_size_highest_value, n_top)
@@ -92,7 +91,8 @@ comp.comparison_top_n_accuracy(
 	20, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
 	display_plot_r2 = False, save_plot_r2 = True, 
-	display_self_labeled_data_amount = False, save_self_labeled_data_amount = feature_columns,
+	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
+	display_logs = False, save_logs = True,
 	display = False, save = True)
 # """
 

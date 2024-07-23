@@ -15,7 +15,7 @@ class plotResults:
 		try:
 			self.alProcess.member_sets
 		except:
-			raise Exception('member_sets not initialized')
+			raise Exception('(plotResults.top_n_accuracy) member_sets not initialized')
 		nb_members = len(self.alProcess.member_sets)
 
 		plt.figure()
@@ -42,7 +42,7 @@ class plotResults:
 		try:
 			self.alProcess.member_sets[0][3]
 		except:
-			raise Exception('Model has never learned')
+			raise Exception('(plotResults.r2) Model has never learned')
 		nb_members = len(self.alProcess.member_sets)
 
 		fig, axs = plt.subplots(lines, columns, figsize = (15, 12))
@@ -91,7 +91,7 @@ class plotResults:
 		try:
 			self.alProcess.member_sets
 		except:
-			raise Exception('alProcess not initialized')
+			raise Exception('(plotResults.KDE_n_top) alProcess not initialized')
 
 		# Standardize the features
 		std_scaler = StandardScaler()
