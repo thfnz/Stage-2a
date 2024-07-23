@@ -48,13 +48,12 @@ class logs:
 		
 		# Rest
 		for iteration in range(self.alProcess.nb_iterations):
-			print(iteration)
 			f.write('Iteration n°' + str(iteration + 1) + ' :\n')
 
 			# Last instance added
 			if last_instance_added:
 				### TODO : implement selfLabeling
-				f.write('Last instance added :\n\tRank #' + str(rank_instance(self.alProcess.member_sets[idx_model][1][n_init + iteration], y_sorted)) + '\n')
+				f.write('Next instance to be added : Rank #' + str(rank_instance(self.alProcess.member_sets[idx_model][1][n_init + iteration], y_sorted)) + '\n')
 
 			# r2
 			if r2:
@@ -66,7 +65,7 @@ class logs:
 			if n_top:
 				f.write('Top ' + str(self.alProcess.n_top) + ' accuracy : ' + str(self.alProcess.class_set[0][iteration]) + '\n')
 				try:
-					f.write('Top ' + str(self.alProcess.n_top) + ' accuracy (n_top_uncertainty) : ' + str(self.alProcess.class_set[3][iteration] + '\n'))
+					f.write('Top ' + str(self.alProcess.n_top) + ' accuracy (n_top_uncertainty) : ' + str(self.alProcess.class_set[3][iteration]) + '\n')
 				except:
 					pass
 
@@ -76,7 +75,7 @@ class logs:
 		if twoSteps:
 			try:
 				f.write(str(self.alProcess.n_top_train) + ' instances added during the second step.\n')
-				f.write('Final top ' + str(self.alProcess.n_top) + ' accuracy : ' + str(self.alProcess.class_set[0][-1] + '\n'))
+				f.write('Final top ' + str(self.alProcess.n_top) + ' accuracy : ' + str(self.alProcess.class_set[0][-1]) + '\n')
 				f.write('-------------------------------------------------------------------------------------\n')
 			except:
 				pass
