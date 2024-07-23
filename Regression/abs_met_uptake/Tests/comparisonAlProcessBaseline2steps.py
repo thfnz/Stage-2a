@@ -52,10 +52,10 @@ class comparisonAlProcessBaseline2steps:
 
 			# Same member_sets initialization
 			member_sets, X_test, y_test = al2steps.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
-			al.member_sets, al.member_sets, base.member_sets = member_sets, member_sets, member_sets
-			al.X_test, al.y_test = X_test, y_test
+			al.member_sets, al2steps.member_sets, base.member_sets = copy.deepcopy(member_sets), copy.deepcopy(member_sets), copy.deepcopy(member_sets)
+			al.X_test, al.y_test = copy.deepcopy(X_test), copy.deepcopy(y_test)
 			al.X, al.y, al.reg_stra = self.X, self.y, self.reg_stra
-			base.X_test, base.y_test = X_test, y_test
+			base.X_test, base.y_test = copy.deepcopy(X_test), copy.deepcopy(y_test)
 			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 
 			print(type(self.alProcess).__name__ + ' #' + str(idx_process + 1))
@@ -66,7 +66,7 @@ class comparisonAlProcessBaseline2steps:
 
 			self.alProcess_n_top_accs.append(al.class_set[0][-1])
 			self.alProcess2steps_n_top_accs.append(al2steps.class_set[0][-1])
-			self.alProcess2steps_n_top_train.append(al2steps.class_set[2][-1])
+			# self.alProcess2steps_n_top_train.append(al2steps.class_set[2][-1])
 			self.alProcess2steps_n_top_uncertainty.append(al2steps.class_set[3][-1])
 			self.baseline_n_top_accs.append(base.class_set[0][-1])
 
@@ -80,13 +80,15 @@ class comparisonAlProcessBaseline2steps:
 					plot_al.top_n_accuracy(name = type(self.alProcess).__name__ + '_alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 					plot_top_n_accuracy(al2steps, name = type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = 'top_n_accuracy/al2steps/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 					plot_nb_already_labeled(al2steps, name = '_' + type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = 'nb_already_labeled/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-					plot_base.top_n_accuracy(name = type(self.baseline).__name__ + '_base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					if type(self.baseline).__name__ != 'fastRandomQuery':
+						plot_base.top_n_accuracy(name = type(self.baseline).__name__ + '_base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
 					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = 'r2/al/', display = display_plot_r2, save = save_plot_r2)
 					plot_al2steps.r2(1, 2, name = 'alProcess2steps_it' + str(idx_process + 1), folder = 'r2/al2steps/', display = display_plot_r2, save = save_plot_r2)
-					plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
+					if type(self.baseline).__name__ != 'fastRandomQuery':
+						plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_al2steps

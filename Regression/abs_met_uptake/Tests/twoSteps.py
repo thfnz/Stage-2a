@@ -148,7 +148,8 @@ def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save
 
 		plt.figure()
 		plt.plot(range(1, len(alProcess.class_set[0]) + 1), alProcess.class_set[0], label = 'X_train')
-		plt.plot(range(1, len(alProcess.class_set[2]) + 1), alProcess.class_set[2], label = 'n_top')
+		if len(alProcess.class_set[2]) > 0:
+			plt.plot(range(1, len(alProcess.class_set[2]) + 1), alProcess.class_set[2], label = 'n_top')
 		if len(alProcess.class_set[3]) > 0:
 			plt.plot(range(1, len(alProcess.class_set[3]) + 1), alProcess.class_set[3], label = 'n_top_uncertainty')
 		plt.legend()
@@ -160,13 +161,13 @@ def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save
 			plt.show()
 
 		if save:
-			check_images_dir(folder)
+			check_images_dir('images/' + folder)
 			path = './images/' + folder + 'plot_top_n_accuracy_' + name + '_'
 			for stra in alProcess.reg_stra:
 				if type(stra) == list:
 					stra = stra[0]
 				path += (stra + '_')
-			plt.savefig(path + 'bs' + str(alProcess.batch_size) + '_bshv' + str(alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
+			plt.savefig(path + 'bs' + str(alProcess.batch_size) + '_m' + str(nb_members) + '_nTop' + str(alProcess.n_top) + '.png', dpi=300)
 
 		plt.close()
 
@@ -183,13 +184,13 @@ def plot_nb_already_labeled(alProcess, name = '', folder = '', display = False, 
 		plt.show()
 
 	if save:
-		check_images_dir(folder)
+		check_images_dir('images/' + folder)
 		path = './images/' + folder + 'plot_nb_already_labeled' + name + '_'
 		for stra in alProcess.reg_stra:
 			if type(stra) == list:
 				stra = stra[0]
 			path += (stra + '_')
-		plt.savefig(path + 'bs' + str(alProcess.batch_size) + '_bshv' + str(alProcess.batch_size_highest_value) + '_m' + str(len(alProcess.member_sets)) + '.png', dpi=300)
+		plt.savefig(path + 'bs' + str(alProcess.batch_size) + '_m' + str(len(alProcess.member_sets)) + '.png', dpi=300)
 
 	plt.close()
 
@@ -275,6 +276,7 @@ class twoStepsNtop:
 		# n_top accuracy
 		self.class_set[1] = n_top_accuracy(self, 2, 0, 'X_train')
 
+		"""
 		# Training on the n_top_train highest predicted value
 		if self.n_top_train > self.n_top:
 			raise Exception('n_top_train > n_top')
@@ -290,6 +292,7 @@ class twoStepsNtop:
 
 		# n_top accuracy
 		n_top_accuracy(self, 6, 2, 'n_top_train')
+		"""
 
 		# Training on the n_top_train predicted value with lowest uncertainty
 		# uncertainty_pred_avg
@@ -329,6 +332,8 @@ class twoStepsNtop:
 		idx_n_top_uncertainty_training = np.array(idx_n_top_uncertainty_training, dtype = int)
 
 		# Training
+		y_highest_target = self.y[self.class_set[1]]
+		X_highest_target = self.X[self.class_set[1]]
 		X_train, y_train = X_highest_target[idx_n_top_uncertainty_training], y_highest_target[idx_n_top_uncertainty_training]
 
 		for idx_model in range(nb_members):

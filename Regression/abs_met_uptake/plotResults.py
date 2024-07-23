@@ -28,13 +28,13 @@ class plotResults:
 			plt.show()
 
 		if save:
-			check_images_dir(folder)
+			check_images_dir('images/' + folder)
 			path = './images/' + folder + 'plot_top_n_accuracy_' + name + '_'
 			for stra in self.alProcess.reg_stra:
 				if type(stra) == list:
 					stra = stra[0]
 				path += (stra + '_')
-			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_bshv' + str(self.alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
+			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_m' + str(nb_members) + '_nTop' + str(self.alProcess.n_top) + '.png', dpi=300)
 
 		plt.close()
 
@@ -77,13 +77,13 @@ class plotResults:
 		if display:
 			plt.show()
 		if save:
-			check_images_dir(folder)
+			check_images_dir('images/' + folder)
 			path = 'images/' + folder + 'plot_r2_' + name + '_'
 			for stra in self.alProcess.reg_stra:
 				if type(stra) == list:
 					stra = stra[0]
 				path += (stra + '_')
-			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_bshv' + str(self.alProcess.batch_size_highest_value) + '_m' + str(nb_members) + '.png', dpi=300)
+			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_m' + str(nb_members) + '.png', dpi=300)
 
 		plt.close()
 
@@ -150,13 +150,13 @@ class plotResults:
 			plt.show()
 
 		if save:
-			check_images_dir(folder)
+			check_images_dir('images/' + folder)
 			path = 'images/' + folder + 'KDE_top_' + str(self.alProcess.n_top) + '_' + name + '_'
 			for stra in self.alProcess.reg_stra:
 				if type(stra) == list:
 					stra = stra[0]
 				path += (stra + '_')
-			plt.savefig(path + '.png', dpi=300)
+			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_m' + str(nb_members) + '_nTop' + str(self.alProcess.n_top) + '.png', dpi=300)
 
 		plt.close()
 

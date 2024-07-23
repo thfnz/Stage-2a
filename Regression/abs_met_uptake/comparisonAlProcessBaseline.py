@@ -46,8 +46,8 @@ class comparisonAlProcessBaseline:
 
 			# Same member_sets initialization
 			member_sets, X_test, y_test = al.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
-			al.member_sets, base.member_sets = member_sets, member_sets
-			base.X_test, base.y_test = X_test, y_test
+			al.member_sets, base.member_sets = copy.deepcopy(member_sets), copy.deepcopy(member_sets)
+			base.X_test, base.y_test = copy.deepcopy(X_test), copy.deepcopy(y_test)
 			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 
 			al.learn(display = display, pbar = pbar)
@@ -63,12 +63,14 @@ class comparisonAlProcessBaseline:
 
 				if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
 					plot_al.top_n_accuracy(name = type(self).__name__ + 'alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-					plot_base.top_n_accuracy(name = type(self).__name__ + 'base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					if type(self.baseline).__name__ != 'fastRandomQuery':
+						plot_base.top_n_accuracy(name = type(self).__name__ + 'base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
 					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = 'r2/al/', display = display_plot_r2, save = save_plot_r2)
-					plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
+					if type(self.baseline).__name__ != 'fastRandomQuery':
+						plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_base

@@ -77,10 +77,9 @@ def vote_count(votes, batch_size):
 	return final_query
 
 def check_images_dir(dir):
-	os.makedirs('./images', exist_ok = True)
 	if len(dir) > 0:
 		dir_split = dir.split('/')
-		path = './images/'
+		path = './'
 		for idx_dir in range(len(dir_split)):
 			path += dir_split[idx_dir] + '/'
 			os.makedirs(path, exist_ok = True)
