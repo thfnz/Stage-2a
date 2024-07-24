@@ -11,7 +11,7 @@ from twoSteps import plot_top_n_accuracy, plot_nb_already_labeled
 sys.path.append('../')
 from logs import logs
 
-def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save = False):
+def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, folder = '', display = False, save = False):
 	plt.figure()
 	plt.hist(n_top_accs)
 	plt.title('Histogram of the accuracy for the ' + str(n_top) + ' highest target values.\nμ = ' + str(np.mean(n_top_accs)) + ' - σ = ' + str(np.std(n_top_accs)))
@@ -20,9 +20,11 @@ def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save
 		plt.show()
 
 	if save:
-		check_images_dir('')
-		path = './images/plot_hist_' + name + '_'
+		check_images_dir('images/' + folder)
+		path = './images/'+ folder + 'plot_hist_' + name + '_'
 		for stra in reg_stra:
+			if type(stra) == list:
+				stra = stra[0]
 			path += (stra + '_')
 		plt.savefig(path + '.png', dpi=300)
 
@@ -41,7 +43,7 @@ class comparisonAlProcessBaseline2steps:
 		self.n_init = n_init
 		self.folder = folder
 
-	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
+	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, lines = 0, columns = 0, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.alProcess2steps_n_top_accs = []
 		self.alProcess2steps_n_top_train = []
@@ -62,9 +64,8 @@ class comparisonAlProcessBaseline2steps:
 			base.X_test, base.y_test = copy.deepcopy(X_test), copy.deepcopy(y_test)
 			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 
-			print(type(self.alProcess).__name__ + ' #' + str(idx_process + 1))
+			print('Iteration #' + str(idx_process + 1))
 			al.learn(display = display, pbar = pbar)
-			print(type(self.alProcess2steps).__name__ + ' #' + str(idx_process + 1))
 			al2steps.learn(display = display, pbar = pbar)
 			base.learn(display = display, pbar = pbar)
 
@@ -89,10 +90,10 @@ class comparisonAlProcessBaseline2steps:
 
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
-					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = self.folder + 'r2/al/', display = display_plot_r2, save = save_plot_r2)
-					plot_al2steps.r2(1, 2, name = 'alProcess2steps_it' + str(idx_process + 1), folder = 'r2/al2steps/', display = display_plot_r2, save = save_plot_r2)
+					plot_al.r2(lines, columns, name = 'alProcess_it' + str(idx_process + 1), folder = self.folder + 'r2/al/', display = display_plot_r2, save = save_plot_r2)
+					plot_al2steps.r2(lines, columns, name = 'alProcess2steps_it' + str(idx_process + 1), folder = 'r2/al2steps/', display = display_plot_r2, save = save_plot_r2)
 					if type(self.baseline).__name__ != 'fastRandomQuery':
-						plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = self.folder + 'r2/base/', display = display_plot_r2, save = save_plot_r2)
+						plot_base.r2(lines, columns, name = 'base_it' + str(idx_process + 1), folder = self.folder + 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_al2steps
@@ -124,10 +125,10 @@ class comparisonAlProcessBaseline2steps:
 			gc.collect()
 
 		# Plot
-		plot_hist_n_top_acc(np.array(self.alProcess_n_top_accs), self.reg_stra, self.alProcess.n_top, 'alProcess_n_top_accs', display = display, save = save)
-		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_accs), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_accs', display = display, save = save)
-		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_train), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_train', display = display, save = save)
-		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_uncertainty), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_uncertainty', display = display, save = save)
-		plot_hist_n_top_acc(np.array(self.baseline_n_top_accs), self.reg_stra, self.baseline.n_top, 'baseline_n_top_accs', display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.alProcess_n_top_accs), self.reg_stra, self.alProcess.n_top, 'alProcess_n_top_accs', folder = self.folder, display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_accs), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_accs', folder = self.folder, display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_train), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_train', folder = self.folder, display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.alProcess2steps_n_top_uncertainty), self.reg_stra, self.alProcess2steps.n_top, 'alProcess2steps_n_top_uncertainty', folder = self.folder, display = display, save = save)
+		plot_hist_n_top_acc(np.array(self.baseline_n_top_accs), self.reg_stra, self.baseline.n_top, 'baseline_n_top_accs', folder = self.folder, display = display, save = save)
 
 

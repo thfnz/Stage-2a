@@ -64,18 +64,20 @@ plot.KDE_n_top(display = False, save = False)
 # astPlot.self_labeled_data_amount(display = False, save = False)
 """
 
-# """
+"""
 # Comparison to a baseline
 comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'compXGBrandFcatB/')
 comp.comparison_top_n_accuracy(
-	10, pbar = True,
-	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, 
-	display_plot_r2 = False, save_plot_r2 = False, 
+	30, pbar = True,
+	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
+	display_plot_r2 = False, save_plot_r2 = True,
+	lines = 1, columns = nb_members,
 	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
+	display_logs = False, save_logs = True,
 	display = False, save = True)
-# """
-
 """
+
+# """
 # 2 steps tests
 n_top_train = nb_label_total - nb_query_oracle
 
@@ -86,14 +88,15 @@ baseline = fastRandomQuery(nb_iterations + n_top_train, batch_size + batch_size_
 # batch_size_scnd_step = 150 - nb_iterations
 # alProcess = twoStepsZone(threshold, nb_iterations, batch_size_scnd_step, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top_train = 100)
 
-comp = comparisonAlProcessBaseline2steps(alProcess, alProcess2steps, baseline, X, y, reg_stra, nb_members, n_init)
+comp = comparisonAlProcessBaseline2steps(alProcess, alProcess2steps, baseline, X, y, reg_stra, nb_members, n_init, folder = 'comp2stepsXBGrandFcatBderive/')
 comp.comparison_top_n_accuracy(
-	20, pbar = True,
+	1, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
-	display_plot_r2 = False, save_plot_r2 = True, 
+	display_plot_r2 = False, save_plot_r2 = True,
+	lines = 1, columns = nb_members,
 	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
 	display_logs = False, save_logs = True,
 	display = False, save = True)
-"""
+# """
 
 
