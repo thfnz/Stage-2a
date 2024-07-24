@@ -6,6 +6,7 @@ from sklearn.linear_model import ElasticNet, ElasticNetCV
 from sklearn.model_selection import RepeatedKFold
 from xgboost import XGBRegressor
 from sklearn.svm import SVR
+from catboost import CatBoostRegressor
 
 def regression_strategy(reg_stra):
 	match reg_stra:
@@ -27,5 +28,8 @@ def regression_strategy(reg_stra):
 
 		case 'SVR':
 			model = make_pipeline(StandardScaler(), SVR())
+
+		case 'catboost':
+			model = CatBoostRegressor(depth = 6, learning_rate = 0.2, l2_leaf_reg = 2, iterations = 300, thread_count = -1, silent = True)
 
 	return model

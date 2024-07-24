@@ -160,12 +160,12 @@ class oracleOnly:
 			query = np.argsort(y_pred)[-self.n_top:]
 			for idx_query in query:
 				votes.append([[idx_query, 1]])
-		self.class_set[2] = vote_count(votes, self.n_top)
+		self.class_set[1] = vote_count(votes, self.n_top)
 
 		nb_instances = len(self.y)
 		y_argsorted = np.argsort(self.y)
 		in_top = 0
-		for idx_highest_target in self.class_set[2]:
+		for idx_highest_target in self.class_set[1]:
 			found = False
 			idx = 0
 			while not found:

@@ -30,7 +30,7 @@ def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, display = False, save
 
 class comparisonAlProcessBaseline2steps:
 
-	def __init__(self, alProcess, alProcess2steps, baseline, X, y, reg_stra, nb_members, n_init):
+	def __init__(self, alProcess, alProcess2steps, baseline, X, y, reg_stra, nb_members, n_init, folder = ''):
 		self.alProcess = alProcess
 		self.alProcess2steps = alProcess2steps
 		self.baseline = baseline
@@ -39,6 +39,7 @@ class comparisonAlProcessBaseline2steps:
 		self.reg_stra = reg_stra
 		self.nb_members = nb_members
 		self.n_init = n_init
+		self.folder = folder
 
 	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
@@ -80,18 +81,18 @@ class comparisonAlProcessBaseline2steps:
 				plot_base = plotResults(base)
 
 				if display_plot_top_n_accuracy or save_plot_top_n_accuracy:
-					plot_al.top_n_accuracy(name = type(self.alProcess).__name__ + '_alProcess_it' + str(idx_process + 1), folder = 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-					plot_top_n_accuracy(al2steps, name = type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = 'top_n_accuracy/al2steps/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
-					plot_nb_already_labeled(al2steps, name = '_' + type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = 'nb_already_labeled/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_al.top_n_accuracy(name = type(self.alProcess).__name__ + '_alProcess_it' + str(idx_process + 1), folder = self.folder + 'top_n_accuracy/al/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_top_n_accuracy(al2steps, name = type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = self.folder + 'top_n_accuracy/al2steps/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+					plot_nb_already_labeled(al2steps, name = '_' + type(self.alProcess2steps).__name__ + '_alProcess2steps_it' + str(idx_process + 1), folder = self.folder + 'nb_already_labeled/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 					if type(self.baseline).__name__ != 'fastRandomQuery':
-						plot_base.top_n_accuracy(name = type(self.baseline).__name__ + '_base_it' + str(idx_process + 1), folder = 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
+						plot_base.top_n_accuracy(name = type(self.baseline).__name__ + '_base_it' + str(idx_process + 1), folder = self.folder + 'top_n_accuracy/base/', display = display_plot_top_n_accuracy, save = save_plot_top_n_accuracy)
 
 				if display_plot_r2 or save_plot_r2:
 					### TODO : allouer dynamiquement lignes et colonnes
-					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = 'r2/al/', display = display_plot_r2, save = save_plot_r2)
+					plot_al.r2(1, 2, name = 'alProcess_it' + str(idx_process + 1), folder = self.folder + 'r2/al/', display = display_plot_r2, save = save_plot_r2)
 					plot_al2steps.r2(1, 2, name = 'alProcess2steps_it' + str(idx_process + 1), folder = 'r2/al2steps/', display = display_plot_r2, save = save_plot_r2)
 					if type(self.baseline).__name__ != 'fastRandomQuery':
-						plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = 'r2/base/', display = display_plot_r2, save = save_plot_r2)
+						plot_base.r2(1, 2, name = 'base_it' + str(idx_process + 1), folder = self.folder + 'r2/base/', display = display_plot_r2, save = save_plot_r2)
 
 				del plot_al
 				del plot_al2steps
@@ -101,8 +102,8 @@ class comparisonAlProcessBaseline2steps:
 				assistPlot_al = assistPlot(al)
 				assistPlot_al2steps = assistPlot(al2steps)
 
-				assistPlot_al.self_labeled_data_amount(idx = 2, name = 'it' + str(idx_process + 1), folder = 'sld_amount/al/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
-				assistPlot_al2steps.self_labeled_data_amount(idx = 4, name = 'it' + str(idx_process + 1), folder = 'sld_amount/al2steps/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
+				assistPlot_al.self_labeled_data_amount(idx = 2, name = 'it' + str(idx_process + 1), folder = self.folder + 'sld_amount/al/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
+				assistPlot_al2steps.self_labeled_data_amount(idx = 4, name = 'it' + str(idx_process + 1), folder = self.folder + 'sld_amount/al2steps/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
 				del assistPlot_al
 
 			if display_logs or save_logs:
@@ -113,10 +114,10 @@ class comparisonAlProcessBaseline2steps:
 					logs_base = logs(base)
 
 				if save_logs:
-					logs_al.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'al/')
-					logs_al2steps.gen_save(n_init = self.n_init, twoSteps = True, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'al2steps/')
+					logs_al.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = self.folder + 'al/')
+					logs_al2steps.gen_save(n_init = self.n_init, twoSteps = True, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = self.folder + 'al2steps/')
 					if type(self.baseline).__name__ != 'fastRandomQuery':
-						logs_base.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = 'base/')
+						logs_base.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = self.folder + 'base/')
 
 			del al
 			del base
