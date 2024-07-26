@@ -37,7 +37,6 @@ n_init = 5
 nb_label_total = 150 + 1 # +1 : Because eval before newdatasets
 nb_query_oracle = nb_label_total # First step only
 nb_iterations = nb_query_oracle - nb_members * n_init
-nb_iterations = 3
 
 batch_size = 1
 batch_size_highest_value = 0

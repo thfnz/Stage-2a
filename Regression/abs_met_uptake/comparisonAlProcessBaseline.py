@@ -3,7 +3,8 @@ import gc
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from scipy.stats import gaussian_kde
 
 from assistFunct import check_images_dir
 from plotResults import plotResults
@@ -39,20 +40,45 @@ def plot_PCA_diff_train(alProcess, baseline, name = '', folder = '', display = F
 	pca = PCA(n_components = 2)
 	pc_df = pca.fit_transform(X_scaled)
 
+	# Sort the data based on absolute methane uptake in descending order (Optimization possible here : values already computed during alProcess learning)
+	sorted_indices = np.argsort(alProcess.y)[::-1]
+	pc_df_sorted = pc_df[sorted_indices]
+	y_sorted = alProcess.y[sorted_indices]
+
+	# n_top highest values
+	n_top_pc_df_sorted = pc_df_sorted[:alProcess.n_top]
+	n_top_y = y_sorted[:alProcess.n_top]
+
 	# Training datasets
 	alProcessTrain = pc_df[alProcess.class_set[2]]
 	baselineTrain = pc_df[baseline.class_set[2]]
+
+	# Normalize the target variable
+	min_max_scaler = MinMaxScaler()
+	n_top_y_normalized = min_max_scaler.fit_transform(n_top_y.reshape(-1, 1)).flatten()
+
+	# KDE for the n_top data points
+	kde = gaussian_kde(n_top_pc_df_sorted.T, weights = n_top_y_normalized, bw_method = 'scott')
 
 	# Min/Max of target values
 	min_target = np.min(alProcess.y)
 	max_target = np.max(alProcess.y)
 
+	# KDE on a grid
+	x_min, x_max = -6, 8
+	y_min, y_max = -4, 8
+	x_grid, y_grid = np.meshgrid(np.linspace(x_min, x_max, 200), np.linspace(y_min, y_max, 200))
+	positions = np.vstack([x_grid.ravel(), y_grid.ravel()])
+	z = kde(positions)
+
 	# Plot
 	fig, axs = plt.subplots(1, 2, figsize = (20, 8))
 	for i in range(2):
-		axs[i].scatter(pc_df[:, 0], pc_df[:, 1], c = 'black')
-	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'red', marker = 'x')
-	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'red', marker = 'x')
+		axs[i].scatter(pc_df[:, 0], pc_df[:, 1], c = alProcess.y, cmap = 'coolwarm', alpha = 1, vmin = min_target, vmax = max_target)
+		axs[i].contourf(x_grid, y_grid, z.reshape(x_grid.shape), cmap = 'coolwarm', alpha = 0.8)
+	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'black', marker = 'x')
+	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'black', marker = 'x')
+	plt.grid(True)
 
 	if display:
 		plt.show()
