@@ -27,16 +27,17 @@ X = dataset[feature_columns].values # 69840 instances
 y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR - catboost)
-reg_stra = ['XGB', 'randomForest', 'catboost']
+reg_stra = ['XGB', 'catboost', 'randomForest']
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
 
 # AL
 nb_members = 3
 n_init = 5
 
-nb_label_total = 150
-nb_query_oracle = 100 # First step only
+nb_label_total = 150 + 1 # +1 : Because eval before newdatasets
+nb_query_oracle = nb_label_total # First step only
 nb_iterations = nb_query_oracle - nb_members * n_init
+nb_iterations = 3
 
 batch_size = 1
 batch_size_highest_value = 0
@@ -49,7 +50,7 @@ n_top = 100
 
 alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 # alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
-baseline = fastRandomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
+baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
 
 """
 # Evaluation of selected models
@@ -64,20 +65,21 @@ plot.KDE_n_top(display = False, save = False)
 # astPlot.self_labeled_data_amount(display = False, save = False)
 """
 
-"""
+# """
 # Comparison to a baseline
-comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'compXGBrandFcatB/')
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testPCA/')
 comp.comparison_top_n_accuracy(
 	30, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
 	display_plot_r2 = False, save_plot_r2 = True,
 	lines = 1, columns = nb_members,
+	display_plot_PCA_diff_train = False,  save_plot_PCA_diff_train = True,
 	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
 	display_logs = False, save_logs = True,
 	display = False, save = True)
-"""
-
 # """
+
+"""
 # 2 steps tests
 n_top_train = nb_label_total - nb_query_oracle
 
@@ -97,6 +99,6 @@ comp.comparison_top_n_accuracy(
 	display_self_labeled_data_amount = False, save_self_labeled_data_amount = False,
 	display_logs = False, save_logs = True,
 	display = False, save = True)
-# """
+"""
 
 

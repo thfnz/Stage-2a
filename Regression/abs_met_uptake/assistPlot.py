@@ -7,7 +7,7 @@ class assistPlot:
 	def __init__(self, alProcess):
 		self.alProcess = alProcess
 
-	def self_labeled_data_amount(self, idx = 2, name = '', folder = '', display = False, save = True):
+	def self_labeled_data_amount(self, idx = 3, name = '', folder = '', display = False, save = True):
 		try:
 			self.alProcess.class_set[idx]
 		except:

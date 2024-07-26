@@ -148,15 +148,15 @@ def plot_top_n_accuracy(alProcess, name = '', folder = '', display = False, save
 
 		plt.figure()
 		plt.plot(range(1, len(alProcess.class_set[0]) + 1), alProcess.class_set[0], label = 'X_train')
-		plt.plot(range(2, len(alProcess.class_set[6] + 1)), alProcess.class_set[6], label = 'd(n_top_X_train)/d(iteration)')
+		plt.plot(range(2, len(alProcess.class_set[6]) + 2), alProcess.class_set[6], label = 'd(n_top_X_train)/d(iteration) normalized ([0, 50])')
 		if len(alProcess.class_set[2]) > 0:
 			plt.plot(range(1, len(alProcess.class_set[2]) + 1), alProcess.class_set[2], label = 'n_top')
 		if len(alProcess.class_set[3]) > 0:
 			plt.plot(range(1, len(alProcess.class_set[3]) + 1), alProcess.class_set[3], label = 'n_top_uncertainty')
-		plt.legend(loc = 'upper left')
+		# plt.legend(loc = 'upper left')
 		plt.xlabel('Iteration')
 		plt.ylabel('Accuracy (%)')
-		plt.title('Accuracy for the top ' + str(alProcess.n_top) + ' instances\nbatch_size : ' + str(alProcess.batch_size) + ' - batch_size_highest_value : ' + str(alProcess.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
+		# plt.title('Accuracy for the top ' + str(alProcess.n_top) + ' instances\nbatch_size : ' + str(alProcess.batch_size) + ' - batch_size_highest_value : ' + str(alProcess.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 		if display:
 			plt.show()
@@ -205,7 +205,7 @@ class twoStepsNtop:
 		self.threshold = threshold
 		self.n_top = n_top
 		self.n_top_train = n_top_train
-		self.class_set = [[], [], [], [], [0], []] # [[n_top_accuracy], [descending_n_top_idxs], [n_top_accuracy_n_top_train], [n_top_accuracy_n_top_train_uncertainty], [amount of self labeled instances], [nb_already_labeled], [d(n_top_accuracy)/d(iteration)]]
+		self.class_set = [[], [], [], [], [0], [], []] # [[n_top_accuracy], [descending_n_top_idxs], [n_top_accuracy_n_top_train], [n_top_accuracy_n_top_train_uncertainty], [amount of self labeled instances], [nb_already_labeled], [d(n_top_accuracy)/d(iteration)]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
@@ -278,8 +278,8 @@ class twoStepsNtop:
 		self.class_set[1] = n_top_accuracy(self, 2, 0, 'X_train')
 
 		# d(n_top_accuracy)/d(iteration)
-		if iteration > 0:
-			self.class_set[6] = self.class_set[1][iteration] - self.class_set[1][iteration - 1]
+		if len(self.class_set[0]) > 1:
+			self.class_set[6].append(self.class_set[0][-1] - self.class_set[0][-2])
 
 		"""
 		# Training on the n_top_train highest predicted value

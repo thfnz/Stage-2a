@@ -76,6 +76,25 @@ def vote_count(votes, batch_size):
 
 	return final_query
 
+def new_bool_repr(boolRepr, query):
+	# Update the boolean representation of which data is used in training (alProces.class_set[2])
+	# Used because of =/= between absolute idx and testing idx.
+	# Can (maybe) be optimized by rewriting all the alProcesses to not delete data from X_test/y_test but instead only use boolRepr
+
+	nb_false = 0
+	for idx in range(len(boolRepr)):
+		if not boolRepr[idx]: # Virtually create a sub array containing all False values explored by nb_false
+			found = False
+			idx_query = 0
+			while not found and idx_query < len(query):
+				if nb_false == query[idx_query]: # If the False value is queried
+					boolRepr[idx] = True
+					found = True
+				idx_query += 1
+			nb_false += 1
+
+	return boolRepr
+
 def check_images_dir(dir):
 	if len(dir) > 0:
 		dir_split = dir.split('/')

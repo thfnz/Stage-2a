@@ -56,7 +56,7 @@ def uncertainty_sampling(X_train, y_train, X_test, y_test, X, y, threshold, reg_
 				if X_test[idx, :].any() == X[idx_abs, :].any():
 					found = True
 					# Labeling
-					selfLabel.append([idx, y_pred[idx_abs]])
+					selfLabel.append([idx, y_pred[idx_abs], idx_abs])
 				else:
 					idx_abs += 1
 
@@ -112,15 +112,25 @@ class selfLabelingInde:
 		self.batch_size_min_uncertainty = batch_size_min_uncertainty
 		self.threshold = threshold
 		self.n_top = n_top
-		self.class_set = [[], [], [0]] # [[n_top_accuracy], [n_top_idxs], [amount of self labeled instances]]
+		self.class_set = [[], [], [], [0]] # [[n_top_accuracy], [n_top_idxs], [bool representation of X_train], [amount of self labeled instances]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
 		self.y = y
 		self.reg_stra = reg_stra
 
+		# Boolean representation of which data is used in training (True if used, False if still in test dataset)
+		n_samples = len(y)
+		self.class_set[2] = [False for i in range(n_samples)]
+		indices = np.arange(n_samples)
+
+		# Train/Test split on indices
 		self.member_sets = []
-		X_train, self.X_test, y_train, self.y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / len(y)))
+		idx_train, idx_test = train_test_split(indices, test_size = (1 - (nb_members * n_init) / len(y)))
+		X_train, self.X_test, y_train, self.y_test = X[idx_train, :], X[idx_test, :], y[idx_train], y[idx_test]
+		
+		for idx in idx_train:
+			self.class_set[2][idx] = True
 
 		# Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
 		for idx_reg_stra in range(len(reg_stra)):
@@ -209,12 +219,13 @@ class selfLabelingInde:
 		for idx_model in range(nb_members):
 			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query, [], oracle = True)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
+		self.class_set[2] = new_bool_repr(self.class_set[2], final_query)
 
 		# Self labeling
 		idxs_selfLabel = []
 		values_selfLabel = []
 		for selfLabelModel in selfLabels: # Unpacking
-			for selfLabel in selfLabelModel: # selfLabel = [idx, predicted value]
+			for selfLabel in selfLabelModel: # selfLabel = [idx, predicted value, idx_abs]
 				# Avoid repetition
 				alreadyQueried = False
 				idx = 0
@@ -225,8 +236,9 @@ class selfLabelingInde:
 				if not alreadyQueried:
 					idxs_selfLabel.append(selfLabel[0])
 					values_selfLabel.append(selfLabel[1])
+					self.class_set[2][selfLabel[2]] = True
 
-		self.class_set[2].append(self.class_set[2][-1] + len(idxs_selfLabel))
+		self.class_set[3].append(self.class_set[3][-1] + len(idxs_selfLabel))
 
 		if len(idxs_selfLabel) > 0:
 			for member in self.member_sets:

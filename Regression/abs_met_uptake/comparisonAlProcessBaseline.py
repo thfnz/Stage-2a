@@ -2,6 +2,8 @@ import copy
 import gc
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 from assistFunct import check_images_dir
 from plotResults import plotResults
@@ -9,8 +11,9 @@ from assistPlot import assistPlot
 from logs import logs
 
 def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, folder = '', display = False, save = False):
+	bins = np.arange(0, 61, 5)
 	plt.figure()
-	plt.hist(n_top_accs)
+	plt.hist(n_top_accs, bins = bins)
 	plt.title('Histogram of the accuracy for the ' + str(n_top) + ' highest target values.\nμ = ' + str(np.mean(n_top_accs)) + ' - σ = ' + str(np.std(n_top_accs)))
 
 	if display:
@@ -27,6 +30,45 @@ def plot_hist_n_top_acc(n_top_accs, reg_stra, n_top, name, folder = '', display 
 
 	plt.close()
 
+def plot_PCA_diff_train(alProcess, baseline, name = '', folder = '', display = False, save = False):
+	# Standardize the features
+	std_scaler = StandardScaler()
+	X_scaled = std_scaler.fit_transform(alProcess.X)
+
+	# PCA
+	pca = PCA(n_components = 2)
+	pc_df = pca.fit_transform(X_scaled)
+
+	# Training datasets
+	alProcessTrain = pc_df[alProcess.class_set[2]]
+	baselineTrain = pc_df[baseline.class_set[2]]
+
+	# Min/Max of target values
+	min_target = np.min(alProcess.y)
+	max_target = np.max(alProcess.y)
+
+	# Plot
+	fig, axs = plt.subplots(1, 2, figsize = (20, 8))
+	for i in range(2):
+		axs[i].scatter(pc_df[:, 0], pc_df[:, 1], c = 'black')
+	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'red', marker = 'x')
+	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'red', marker = 'x')
+
+	if display:
+		plt.show()
+
+	if save:
+		check_images_dir('images/' + folder)
+		path = './images/'+ folder + 'plot_PCA_diff_train_' + name + '_'
+		for stra in alProcess.reg_stra:
+			if type(stra) == list:
+				stra = stra[0]
+			path += (stra + '_')
+		plt.savefig(path + '.png', dpi=300)
+
+	plt.close()
+
+
 class comparisonAlProcessBaseline:
 
 	def __init__(self, alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = ''):
@@ -39,7 +81,7 @@ class comparisonAlProcessBaseline:
 		self.n_init = n_init
 		self.folder = folder
 
-	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, lines = 0, columns = 0, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
+	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, lines = 0, columns = 0, display_plot_PCA_diff_train = False,  save_plot_PCA_diff_train = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
 
@@ -51,7 +93,7 @@ class comparisonAlProcessBaseline:
 			# Same member_sets initialization
 			member_sets, X_test, y_test = al.member_setsInit(self.X, self.y, self.reg_stra, self.nb_members, self.n_init, display = display)
 			al.member_sets, base.member_sets = copy.deepcopy(member_sets), copy.deepcopy(member_sets)
-			base.X_test, base.y_test = copy.deepcopy(X_test), copy.deepcopy(y_test)
+			base.X_test, base.y_test, base.class_set[2] = copy.deepcopy(X_test), copy.deepcopy(y_test), copy.deepcopy(al.class_set[2])
 			base.X, base.y, base.reg_stra = self.X, self.y, self.reg_stra
 
 			al.learn(display = display, pbar = pbar)
@@ -79,11 +121,13 @@ class comparisonAlProcessBaseline:
 				del plot_al
 				del plot_base
 
+			if display_plot_PCA_diff_train or save_plot_PCA_diff_train:
+				plot_PCA_diff_train(al, base, name = 'it' + str(idx_process + 1), folder = self.folder + 'PCA_diff_train/', display = display_plot_PCA_diff_train, save = save_plot_PCA_diff_train)
+
 			if display_self_labeled_data_amount or save_self_labeled_data_amount:
 				assistPlot_al = assistPlot(al)
-				assistPlot_al.self_labeled_data_amount(idx = 2, name = '_it' + str(idx_process + 1), folder = self.folder + 'sld_amount/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
+				assistPlot_al.self_labeled_data_amount(idx = 3, name = '_it' + str(idx_process + 1), folder = self.folder + 'sld_amount/', display = display_self_labeled_data_amount, save = save_self_labeled_data_amount)
 				del assistPlot_al
-
 
 			if display_logs or save_logs:
 				### TODO : display_logs

@@ -91,15 +91,25 @@ class oracleOnly:
 		self.batch_size = batch_size
 		self.batch_size_highest_value = batch_size_highest_value
 		self.n_top = n_top
-		self.class_set = [[], []] # [[n_top_accuracy], [n_top_idxs]]
+		self.class_set = [[], [], []] # [[n_top_accuracy], [n_top_idxs], [bool representation of X_train]]
 
 	def member_setsInit(self, X, y, reg_stra, nb_members, n_init, display = False):
 		self.X = X
 		self.y = y
 		self.reg_stra = reg_stra
 
+		# Boolean representation of which data is used in training (True if used, False if still in test dataset)
+		n_samples = len(y)
+		self.class_set[2] = [False for i in range(n_samples)]
+		indices = np.arange(n_samples)
+
+		# Train/Test split on indices
 		self.member_sets = []
-		X_train, self.X_test, y_train, self.y_test = train_test_split(X, y, test_size = (1 - (nb_members * n_init) / len(y)))
+		idx_train, idx_test = train_test_split(indices, test_size = (1 - (nb_members * n_init) / len(y)))
+		X_train, self.X_test, y_train, self.y_test = X[idx_train, :], X[idx_test, :], y[idx_train], y[idx_test]
+		
+		for idx in idx_train:
+			self.class_set[2][idx] = True
 
 		# Model repartition. If nb_members doesn't allow a perfect repartition, the first model of reg_stra will be used for the rest.
 		for idx_reg_stra in range(len(reg_stra)):
@@ -186,6 +196,7 @@ class oracleOnly:
 		for idx_model in range(nb_members):
 			self.member_sets[idx_model][0], self.member_sets[idx_model][1] = new_datasets(self.member_sets[idx_model][0], self.member_sets[idx_model][1], self.X_test, self.y_test, final_query, [], oracle = True)
 		self.X_test, self.y_test = delete_data(self.X_test, self.y_test, np.array(final_query))
+		self.class_set[2] = new_bool_repr(self.class_set[2], final_query)
 
 		return self.member_sets[0][0][- (self.batch_size + self.batch_size_highest_value)], self.member_sets[0][1][- (self.batch_size + self.batch_size_highest_value)]
 

@@ -22,7 +22,7 @@ class plotResults:
 		plt.plot(range(1, len(self.alProcess.class_set[0]) + 1), self.alProcess.class_set[0])
 		plt.xlabel('Iteration')
 		plt.ylabel('Accuracy (%)')
-		plt.title('Accuracy for the top ' + str(self.alProcess.n_top) + ' instances\nbatch_size : ' + str(self.alProcess.batch_size) + ' - batch_size_highest_value : ' + str(self.alProcess.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
+		# plt.title('Accuracy for the top ' + str(self.alProcess.n_top) + ' instances\nbatch_size : ' + str(self.alProcess.batch_size) + ' - batch_size_highest_value : ' + str(self.alProcess.batch_size_highest_value) + ' - nb_members : ' + str(nb_members))
 
 		if display:
 			plt.show()
@@ -132,7 +132,7 @@ class plotResults:
 		max_target = np.max(self.alProcess.y)
 
 		# Plot
-		plt.figure(figsize=(10, 8))
+		plt.figure(figsize = (10, 8))
 		scatter = plt.scatter(pc_df[:, 0], pc_df[:, 1], c = self.alProcess.y, cmap = 'coolwarm', alpha = 1, vmin = min_target, vmax = max_target)
 		plt.contourf(x_grid, y_grid, z.reshape(x_grid.shape), cmap = 'coolwarm', alpha = 0.8)
 		plt.scatter(n_top_pc_df_sorted[:, 0], n_top_pc_df_sorted[:, 1], c = 'red', marker = 'x', s = 50, label = 'n_top highest targets')
@@ -159,4 +159,5 @@ class plotResults:
 			plt.savefig(path + 'bs' + str(self.alProcess.batch_size) + '_m' + str(nb_members) + '_nTop' + str(self.alProcess.n_top) + '.png', dpi=300)
 
 		plt.close()
+
 
