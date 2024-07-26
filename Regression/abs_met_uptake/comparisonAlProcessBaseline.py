@@ -65,17 +65,19 @@ def plot_PCA_diff_train(alProcess, baseline, name = '', folder = '', display = F
 	max_target = np.max(alProcess.y)
 
 	# KDE on a grid
-	x_min, x_max = -6, 8
-	y_min, y_max = -4, 8
+	x_min, x_max = -10, 13
+	y_min, y_max = -6, 17
 	x_grid, y_grid = np.meshgrid(np.linspace(x_min, x_max, 200), np.linspace(y_min, y_max, 200))
 	positions = np.vstack([x_grid.ravel(), y_grid.ravel()])
 	z = kde(positions)
 
 	# Plot
-	fig, axs = plt.subplots(1, 2, figsize = (20, 8))
+	fig, axs = plt.subplots(1, 2, figsize = (18, 8))
 	for i in range(2):
 		axs[i].scatter(pc_df[:, 0], pc_df[:, 1], c = alProcess.y, cmap = 'coolwarm', alpha = 1, vmin = min_target, vmax = max_target)
 		axs[i].contourf(x_grid, y_grid, z.reshape(x_grid.shape), cmap = 'coolwarm', alpha = 0.8)
+		axs[i].set_xlim(x_min, x_max)
+		axs[i].set_ylim(y_min, y_max)
 	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'black', marker = 'x')
 	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'black', marker = 'x')
 	plt.grid(True)

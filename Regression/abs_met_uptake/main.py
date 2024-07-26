@@ -4,6 +4,7 @@ import pandas as pd
 
 from oracleOnly import oracleOnly
 from selfLabelingInde import selfLabelingInde
+from nTopUncertainty import nTopUncertainty
 sys.path.append('./Tests')
 from twoSteps import plot_top_n_accuracy, twoStepsNtop, twoStepsZone
 from baseline import randomQuery, fastRandomQuery
@@ -47,18 +48,20 @@ threshold = 1e-3
 # n_top = int(len(y) * 0.01)
 n_top = 100
 
-alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
+# alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 # alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
-baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
+alProcess = nTopUncertainty(nb_iterations, batch_size, batch_size_highest_value)
+# baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
+baseline = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 
 """
 # Evaluation of selected models
 alProcess.initLearn(X, y, reg_stra, nb_members, n_init, display = False, pbar = True)
 
 plot = plotResults(alProcess)
-plot.top_n_accuracy(display = False, save = False)
-plot.r2(2, 1, display = False, save = False)
-plot.KDE_n_top(display = False, save = False)
+plot.top_n_accuracy(display = False, save = True)
+plot.r2(1, 3, display = False, save = True)
+plot.KDE_n_top(display = False, save = True)
 
 # astPlot = assistPlot(alProcess)
 # astPlot.self_labeled_data_amount(display = False, save = False)
@@ -66,9 +69,9 @@ plot.KDE_n_top(display = False, save = False)
 
 # """
 # Comparison to a baseline
-comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testPCA/')
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testnTopUncertainty/')
 comp.comparison_top_n_accuracy(
-	30, pbar = True,
+	1, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
 	display_plot_r2 = False, save_plot_r2 = True,
 	lines = 1, columns = nb_members,

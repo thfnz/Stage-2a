@@ -60,7 +60,7 @@ def vote_count(votes, batch_size):
 				idx_maxVoteCount = [candidate[0]]
 
 			elif candidate[1] == maxVoteCount:
-				idx_maxVoteCount.append(candidate[0])
+				np.append(idx_maxVoteCount, candidate[0])
 
 		# In the event of a tie that would cause the batch_size to be exceeded, randomly select candidates.
 		if (len(final_query) + len(idx_maxVoteCount)) > batch_size:
