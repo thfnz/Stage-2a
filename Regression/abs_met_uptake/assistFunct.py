@@ -52,7 +52,7 @@ def vote_count(votes, batch_size):
 	final_query = []
 	while len(final_query) < batch_size:
 		# Get a list of all the candidates with the maxVoteCount
-		maxVoteCount = 0
+		maxVoteCount = -1
 		idx_maxVoteCount = np.array([])
 		for candidate in count:
 			if candidate[1] > maxVoteCount:

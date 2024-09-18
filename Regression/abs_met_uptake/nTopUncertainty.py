@@ -23,7 +23,7 @@ def n_top_uncertainty(n_top, boolRepr, X_train, y_train, X_test, y_test, X, y, r
 	idx_n_top_pred = y_pred_argsorted[-n_top:]
 
 	# uncertainty_n_top_pred
-	uncertainty_n_top_pred = np.array([[0, 0] for i in range(n_top)])
+	uncertainty_n_top_pred = np.array([[0., 0.] for i in range(n_top)])
 
 	nb_false = 0 # cf assistFunct new_bool_repr
 	for idx in range(len(boolRepr)):
@@ -155,7 +155,7 @@ class nTopUncertainty:
 				self.member_sets[idx_model][3].append(r2_score_y)
 
 			# Vote count
-			final_query = vote_count(votes, self.batch_size)
+			final_query = np.array(vote_count(votes, self.batch_size), dtype = int)
 
 		# n_top accuracy
 		votes = []

@@ -47,13 +47,20 @@ class logs:
 			f.write('-------------------------------------------------------------------------------------\n')
 		
 		# Rest
+		avg_instance_added = 0
+		peak_instace_addded = int(self.alProcess.y.shape[0])
+
 		for iteration in range(self.alProcess.nb_iterations):
 			f.write('Iteration n°' + str(iteration + 1) + ' :\n')
 
 			# Last instance added
 			if last_instance_added:
 				### TODO : implement selfLabeling
-				f.write('Next instance to be added : Rank #' + str(rank_instance(self.alProcess.member_sets[idx_model][1][n_init + iteration], y_sorted)) + '\n')
+				rank_instance_added = rank_instance(self.alProcess.member_sets[idx_model][1][n_init + iteration], y_sorted)
+				f.write('Next instance to be added : Rank #' + str(rank_instance_added) + '\n')
+				avg_instance_added += rank_instance_added
+				if rank_instance_added < peak_instace_addded:
+					peak_instace_addded = rank_instance_added
 
 			# r2
 			if r2:
@@ -79,5 +86,12 @@ class logs:
 				f.write('-------------------------------------------------------------------------------------\n')
 			except:
 				pass
+
+		if last_instance_added:
+			f.write('Average of rank added : ' + str(avg_instance_added / self.alProcess.nb_iterations) + '\n')
+			f.write('Peak rank added : ' + str(peak_instace_addded) + '\n')
+			f.write('-------------------------------------------------------------------------------------\n')
+
+		f.close()
 
 

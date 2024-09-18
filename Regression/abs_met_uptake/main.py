@@ -28,16 +28,17 @@ X = dataset[feature_columns].values # 69840 instances
 y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR - catboost)
-reg_stra = ['XGB', 'catboost', 'randomForest']
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
+reg_stra = ['catboost', 'XGB']
 
 # AL
-nb_members = 3
+nb_members = 2
 n_init = 5
 
 nb_label_total = 150 + 1 # +1 : Because eval before newdatasets
 nb_query_oracle = nb_label_total # First step only
 nb_iterations = nb_query_oracle - nb_members * n_init
+### TODO : safe code against nb_label_total > nb_members * n_init
 
 batch_size = 1
 batch_size_highest_value = 0
@@ -69,7 +70,7 @@ plot.KDE_n_top(display = False, save = True)
 
 # """
 # Comparison to a baseline
-comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testnTopUncertainty/')
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'XGBcatB/')
 comp.comparison_top_n_accuracy(
 	1, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 

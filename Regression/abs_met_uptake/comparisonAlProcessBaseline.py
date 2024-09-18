@@ -1,3 +1,4 @@
+import os
 import copy
 import gc
 import matplotlib.pyplot as plt
@@ -78,9 +79,9 @@ def plot_PCA_diff_train(alProcess, baseline, name = '', folder = '', display = F
 		axs[i].contourf(x_grid, y_grid, z.reshape(x_grid.shape), cmap = 'coolwarm', alpha = 0.8)
 		axs[i].set_xlim(x_min, x_max)
 		axs[i].set_ylim(y_min, y_max)
+		axs[i].grid(True)
 	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'black', marker = 'x')
 	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'black', marker = 'x')
-	plt.grid(True)
 
 	if display:
 		plt.show()
@@ -109,6 +110,32 @@ class comparisonAlProcessBaseline:
 		self.n_init = n_init
 		self.folder = folder
 
+		if os.path.isdir('./images/' + folder):
+			conf = False
+			while not conf:
+				confirm = input('Save folder (images) already exists, erase previous data ? [y/n]')
+				match str(confirm):
+					case 'y':
+						os.rmdir('./images/' + folder)
+						conf = True
+
+					case 'n':
+						exit()
+						conf = True
+
+		if os.path.isdir('./logs/' + folder):
+			conf = False
+			while not conf:
+				confirm = input('Save folder (logs) already exists, erase previous data ? [y/n]')
+				match str(confirm):
+					case 'y':
+						os.rmdir('./logs/' + folder)
+						conf = True
+
+					case 'n':
+						exit()
+						conf = True
+						
 	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, lines = 0, columns = 0, display_plot_PCA_diff_train = False,  save_plot_PCA_diff_train = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []
@@ -167,6 +194,10 @@ class comparisonAlProcessBaseline:
 					logs_al.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = self.folder + 'al/')
 					if type(self.baseline).__name__ != 'fastRandomQuery':
 						logs_base.gen_save(n_init = self.n_init, twoSteps = False, last_instance_added = True, r2 = True, n_top = True, name = 'it' + str(idx_process + 1), folder = self.folder + 'base/')
+
+				del logs_al
+				if type(self.baseline).__name__ != 'fastRandomQuery':
+					del logs_base
 
 			del al
 			del base
