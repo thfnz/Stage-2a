@@ -1,4 +1,5 @@
 import os
+import shutil
 import copy
 import gc
 import matplotlib.pyplot as plt
@@ -48,10 +49,10 @@ class comparisonAlProcessBaseline2steps:
 		if os.path.isdir('./images/' + folder):
 			conf = False
 			while not conf:
-				confirm = input('Save folder (images) already exists, erase previous data ? [y/n]')
+				confirm = input('Save folder (images) already exists, erase previous data ? [y/n]\n')
 				match str(confirm):
 					case 'y':
-						os.rmdir('./images/' + folder)
+						shutil.rmtree('./images/' + folder)
 						conf = True
 
 					case 'n':
@@ -61,10 +62,10 @@ class comparisonAlProcessBaseline2steps:
 		if os.path.isdir('./logs/' + folder):
 			conf = False
 			while not conf:
-				confirm = input('Save folder (logs) already exists, erase previous data ? [y/n]')
+				confirm = input('\nSave folder (logs) already exists, erase previous data ? [y/n]\n')
 				match str(confirm):
 					case 'y':
-						os.rmdir('./logs/' + folder)
+						shutil.rmtree('./logs/' + folder)
 						conf = True
 
 					case 'n':

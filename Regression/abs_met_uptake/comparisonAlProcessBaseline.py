@@ -1,4 +1,5 @@
 import os
+import shutil
 import copy
 import gc
 import matplotlib.pyplot as plt
@@ -113,10 +114,10 @@ class comparisonAlProcessBaseline:
 		if os.path.isdir('./images/' + folder):
 			conf = False
 			while not conf:
-				confirm = input('Save folder (images) already exists, erase previous data ? [y/n]')
+				confirm = input('Save folder (images) already exists, erase previous data ? [y/n]\n')
 				match str(confirm):
 					case 'y':
-						os.rmdir('./images/' + folder)
+						shutil.rmtree('./images/' + folder)
 						conf = True
 
 					case 'n':
@@ -126,16 +127,16 @@ class comparisonAlProcessBaseline:
 		if os.path.isdir('./logs/' + folder):
 			conf = False
 			while not conf:
-				confirm = input('Save folder (logs) already exists, erase previous data ? [y/n]')
+				confirm = input('\nSave folder (logs) already exists, erase previous data ? [y/n]\n')
 				match str(confirm):
 					case 'y':
-						os.rmdir('./logs/' + folder)
+						shutil.rmtree('./logs/' + folder)
 						conf = True
 
 					case 'n':
 						exit()
 						conf = True
-						
+
 	def comparison_top_n_accuracy(self, nb_processes, pbar = False, display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = False, display_plot_r2 = False, save_plot_r2 = False, lines = 0, columns = 0, display_plot_PCA_diff_train = False,  save_plot_PCA_diff_train = False, display_self_labeled_data_amount = False, save_self_labeled_data_amount = False, display_logs = False, save_logs = False, display = False, save = True):
 		self.alProcess_n_top_accs = []
 		self.baseline_n_top_accs = []

@@ -29,7 +29,7 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR - catboost)
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
-reg_stra = ['catboost', 'XGB']
+reg_stra = ['catboost', 'randomForest']
 
 # AL
 nb_members = 2
@@ -70,7 +70,7 @@ plot.KDE_n_top(display = False, save = True)
 
 # """
 # Comparison to a baseline
-comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'XGBcatB/')
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testnTopUncertaintyAvg/')
 comp.comparison_top_n_accuracy(
 	1, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
