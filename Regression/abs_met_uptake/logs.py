@@ -18,7 +18,7 @@ def rank_instance(y_instance, y_sorted):
 	return rank
 
 def get_stra(alProcess, idx_model):
-	stra = alProcess.reg_stra[idx_model]
+	stra = alProcess.member_sets[idx_model][4]
 	if type(stra) == list:
 		stra = stra[0]
 

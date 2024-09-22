@@ -82,7 +82,9 @@ def plot_PCA_diff_train(alProcess, baseline, name = '', folder = '', display = F
 		axs[i].set_ylim(y_min, y_max)
 		axs[i].grid(True)
 	axs[0].scatter(alProcessTrain[:, 0], alProcessTrain[:, 1], c = 'black', marker = 'x')
+	axs[0].set_title('alProcess')
 	axs[1].scatter(baselineTrain[:, 0], baselineTrain[:, 1], c = 'black', marker = 'x')
+	axs[1].set_title('baseline')
 
 	if display:
 		plt.show()

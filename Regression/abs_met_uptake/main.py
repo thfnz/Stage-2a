@@ -29,7 +29,7 @@ y = dataset[' absolute methane uptake high P [v STP/v]'].values
 
 # Model selection (randomForest - [elasticNet, polynomialDegree, alpha] - elasticNetCV - XGB - SVR - catboost)
 # reg_stra = ['XGB', 'randomForest', ['elasticNet', 3, 10], ['elasticNet', 4, 10]]
-reg_stra = ['catboost', 'randomForest']
+reg_stra = ['catboost', ['elasticNet', 4, 10]]
 
 # AL
 nb_members = 2
@@ -49,11 +49,11 @@ threshold = 1e-3
 # n_top = int(len(y) * 0.01)
 n_top = 100
 
-# alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
+alProcess = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 # alProcess = selfLabelingInde(threshold, nb_iterations, batch_size, batch_size_highest_value, batch_size_min_uncertainty, n_top)
-alProcess = nTopUncertainty(nb_iterations, batch_size, batch_size_highest_value)
-# baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
-baseline = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
+# alProcess = nTopUncertainty(nb_iterations, batch_size, batch_size_highest_value)
+baseline = randomQuery(nb_iterations, batch_size + batch_size_highest_value, n_top)
+# baseline = oracleOnly(nb_iterations, batch_size, batch_size_highest_value)
 
 """
 # Evaluation of selected models
@@ -70,9 +70,9 @@ plot.KDE_n_top(display = False, save = True)
 
 # """
 # Comparison to a baseline
-comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'testnTopUncertaintyAvg/')
+comp = comparisonAlProcessBaseline(alProcess, baseline, X, y, reg_stra, nb_members, n_init, folder = 'oracleOnlyCatBENet/')
 comp.comparison_top_n_accuracy(
-	1, pbar = True,
+	30, pbar = True,
 	display_plot_top_n_accuracy = False, save_plot_top_n_accuracy = True, 
 	display_plot_r2 = False, save_plot_r2 = True,
 	lines = 1, columns = nb_members,
